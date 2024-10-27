@@ -1,5 +1,4 @@
 client/node_modules
-client/package-lock.json
 server/go.sum
 server/pomodoro.db
 *.bak
