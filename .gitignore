@@ -1,0 +1,4 @@
+client/node_modules
+server/go.sum
+server/pomodoro.db
+*.bak
