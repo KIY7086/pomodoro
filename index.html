@@ -1761,6 +1761,47 @@
                             });
                         }
                     },
+                    
+                    // 获取下一个模式
+                    getNextMode() {
+                        if (this.currentMode === 'pomodoro') {
+                            return this.completedSessions % this.settings.longBreakInterval === 0 
+                                ? 'longBreak' 
+                                : 'shortBreak';
+                        }
+                        return 'pomodoro';
+                    },
+                    
+                    
+                    // 声音效果
+                    playCompletionSound() {
+                        if (!this.settings.soundEnabled) {
+                            return;
+                        }
+                    
+                        try {
+                            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                            const oscillator = audioContext.createOscillator();
+                            const gainNode = audioContext.createGain();
+                    
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioContext.destination);
+                    
+                            // 使用更柔和的音色
+                            oscillator.type = 'sine';
+                            oscillator.frequency.setValueAtTime(660, audioContext.currentTime); // 降低频率使声音更温和
+                    
+                            // 更平滑的音量控制
+                            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                            gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1); // 降低最大音量
+                            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+                    
+                            oscillator.start();
+                            oscillator.stop(audioContext.currentTime + 0.6);
+                        } catch (error) {
+                            console.error('Error playing completion sound:', error);
+                        }
+                    },
             
                     // 计时器完成处理
                     handleTimerComplete() {
@@ -1811,48 +1852,7 @@
                         } else {
                             this.changeMode(nextMode);
                         }
-                    }
-            
-                    // 获取下一个模式
-                    getNextMode() {
-                        if (this.currentMode === 'pomodoro') {
-                            return this.completedSessions % this.settings.longBreakInterval === 0 
-                                ? 'longBreak' 
-                                : 'shortBreak';
-                        }
-                        return 'pomodoro';
                     },
-            
-                    // 声音效果
-                    playCompletionSound() {
-                        if (!this.settings.soundEnabled) {
-                            return;
-                        }
-                    
-                        try {
-                            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                            const oscillator = audioContext.createOscillator();
-                            const gainNode = audioContext.createGain();
-                    
-                            oscillator.connect(gainNode);
-                            gainNode.connect(audioContext.destination);
-                    
-                            // 使用更柔和的音色
-                            oscillator.type = 'sine';
-                            oscillator.frequency.setValueAtTime(660, audioContext.currentTime); // 降低频率使声音更温和
-                    
-                            // 更平滑的音量控制
-                            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                            gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1); // 降低最大音量
-                            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
-                    
-                            oscillator.start();
-                            oscillator.stop(audioContext.currentTime + 0.6);
-                        } catch (error) {
-                            console.error('Error playing completion sound:', error);
-                        }
-                    },
-
             
                     // 面板控制
                     openSettings() {
