@@ -86,21 +86,17 @@ self.addEventListener('message', (event) => {
 
 // 启动定时器
 function startTimer({ timerId, duration, initialTime, mode }) {
-  const now = Date.now();
-  const startTime = now - ((duration - initialTime) * 1000); // 计算实际的开始时间
-
   if (timers.has(timerId)) {
     clearInterval(timers.get(timerId).intervalId);
   }
 
+  const endTime = Date.now() + initialTime * 1000;
   const timer = {
-    startTime,
-    duration: duration * 1000, // 转换为毫秒
+    endTime,
+    duration,
     mode,
     intervalId: setInterval(() => {
-      const currentTime = Date.now();
-      const elapsedTime = currentTime - startTime;
-      const timeLeft = Math.max(0, Math.ceil((duration * 1000 - elapsedTime) / 1000));
+      const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
       
       // 广播时间更新
       broadcastTime(timerId, timeLeft);
@@ -115,7 +111,6 @@ function startTimer({ timerId, duration, initialTime, mode }) {
   
   timers.set(timerId, timer);
 }
-
 
 // 暂停定时器
 function pauseTimer(timerId) {
@@ -136,21 +131,10 @@ function resetTimer(timerId) {
 }
 
 // 同步时间
-function syncTime({ timerId }) {
+function syncTime({ timerId, timeLeft }) {
   const timer = timers.get(timerId);
   if (timer) {
-    const currentTime = Date.now();
-    const elapsedTime = currentTime - timer.startTime;
-    const timeLeft = Math.max(0, Math.ceil((timer.duration - elapsedTime) / 1000));
-    
-    // 广播同步后的时间
-    broadcastTime(timerId, timeLeft);
-    
-    if (timeLeft === 0) {
-      clearInterval(timer.intervalId);
-      timers.delete(timerId);
-      timerComplete(timer.mode);
-    }
+    timer.endTime = Date.now() + timeLeft * 1000;
   }
 }
 
