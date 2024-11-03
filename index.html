@@ -1248,6 +1248,7 @@
                 circumference: 2 * Math.PI * 130,
                 wakeLock: null,
                 notificationSound: null,
+                startTime: null,
                 toastTimeout: null,
                 
                 // 状态和面板控制
@@ -1305,6 +1306,10 @@
                     document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
                     document.addEventListener('keydown', (e) => this.handleKeyPress(e));
                     window.addEventListener('beforeunload', () => this.handleBeforeUnload());
+                    
+                    setInterval(() => {
+                        this.syncTime();
+                    }, 1000);
                 },
         
                 // Service Worker设置
@@ -1421,7 +1426,7 @@
                 start() {
                     if (!this.isRunning) {
                         this.isRunning = true;
-                        this.lastTime = performance.now();
+                        this.startTime = Date.now() - ((this.times[this.currentMode] - this.timeLeft) * 1000);
                         
                         if (navigator.serviceWorker?.controller) {
                             navigator.serviceWorker.controller.postMessage({
@@ -1445,6 +1450,7 @@
                 
                 pause() {
                     this.isRunning = false;
+                    this.startTime = null;
                     
                     if (navigator.serviceWorker?.controller) {
                         navigator.serviceWorker.controller.postMessage({
@@ -1471,6 +1477,7 @@
                 reset() {
                     this.pause();
                     this.timeLeft = this.times[this.currentMode];
+                    this.startTime = null;
                     
                     if (navigator.serviceWorker?.controller) {
                         navigator.serviceWorker.controller.postMessage({
@@ -1634,16 +1641,19 @@
                 },
         
                 handleVisibilityChange() {
-                    if (document.hidden) {
-                        this.lastTime = performance.now();
-                    } else if (this.isRunning) {
-                        if (navigator.serviceWorker?.controller) {
+                    if (!document.hidden && this.isRunning && this.startTime) {
+                        // 计算实际经过的时间
+                        const elapsedTime = Date.now() - this.startTime;
+                        const totalDuration = this.times[this.currentMode] * 1000;
+                        this.timeLeft = Math.max(0, Math.ceil((totalDuration - elapsedTime) / 1000));
+            
+                        if (this.timeLeft === 0) {
+                            this.timeUp();
+                        } else if (navigator.serviceWorker?.controller) {
+                            // 同步时间到 Service Worker
                             navigator.serviceWorker.controller.postMessage({
                                 type: 'SYNC_TIME',
-                                payload: {
-                                    timerId: this.timerId,
-                                    timeLeft: this.timeLeft
-                                }
+                                payload: { timerId: this.timerId }
                             });
                         }
                     }
@@ -1824,36 +1834,6 @@
                         if (this.showStatsPanel) this.closeStatsPanel();
                     }
                 },
-        
-                // 页面可见性变化处理
-                handleVisibilityChange() {
-                    if (document.hidden) {
-                        this.lastTime = performance.now();
-                    } else if (this.isRunning) {
-                        if (navigator.serviceWorker?.controller) {
-                            navigator.serviceWorker.controller.postMessage({
-                                type: 'SYNC_TIME',
-                                payload: {
-                                    timerId: this.timerId,
-                                    timeLeft: this.timeLeft
-                                }
-                            });
-                        }
-                    }
-                },
-        
-                // 页面卸载前处理
-                handleBeforeUnload() {
-                    if (this.isRunning && navigator.serviceWorker?.controller) {
-                        navigator.serviceWorker.controller.postMessage({
-                            type: 'SYNC_TIME',
-                            payload: {
-                                timerId: this.timerId,
-                                timeLeft: this.timeLeft
-                            }
-                        });
-                    }
-                }
             }));
         });
    </script>
