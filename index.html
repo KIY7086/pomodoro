@@ -1178,20 +1178,6 @@
                                   min="1"
                                   max="10">
                        </div>
-                       <div class="switch-group">
-                            <label class="switch-label">按钮振动</label>
-                            <label class="switch">
-                                <input type="checkbox" x-model="settings.vibrationEnabled">
-                                <span class="switch-slider"></span>
-                            </label>
-                        </div>
-                        <div class="switch-group">
-                            <label class="switch-label">读秒振动</label>
-                            <label class="switch">
-                                <input type="checkbox" x-model="settings.tickVibrationEnabled">
-                                <span class="switch-slider"></span>
-                            </label>
-                        </div>
                    </div>
                </div>
            </div>
@@ -1292,9 +1278,7 @@
                         notificationsEnabled: false,
                         autoStartBreak: true,
                         autoStartPomodoro: false,
-                        longBreakInterval: 4,
-                        vibrationEnabled: true,
-                        tickVibrationEnabled: false,
+                        longBreakInterval: 4
                     },
             
                     // Toast系统
@@ -1441,41 +1425,10 @@
                     get canReset() {
                         return this.timeLeft !== this.times[this.currentMode];
                     },
-                    
-                    // 按钮振动反馈
-                    vibrate(pattern = 20) {
-                        if (this.settings.vibrationEnabled && 'vibrate' in navigator) {
-                            try {
-                                navigator.vibrate(pattern);
-                            } catch (error) {
-                                console.error('Button vibration failed:', error);
-                            }
-                        }
-                    },
-                    
-                    // 读秒振动反馈
-                    tickVibrate() {
-                        if (this.settings.tickVibrationEnabled && 'vibrate' in navigator) {
-                            try {
-                                // 使用更短和更轻微的振动pattern
-                                navigator.vibrate(10);
-                            } catch (error) {
-                                console.error('Tick vibration failed:', error);
-                            }
-                        }
-                    },
             
                     // 计时器控制
-                    // 在开始计时时检查振动权限
                     start() {
                         if (!this.isRunning) {
-                            // 如果启用了读秒振动，检查振动API
-                            if (this.settings.tickVibrationEnabled && !('vibrate' in navigator)) {
-                                this.settings.tickVibrationEnabled = false;
-                                this.showToast('你的设备不支持振动功能', 'warning', 'fa-exclamation-triangle');
-                                this.saveSettings();
-                            }
-                            
                             this.isRunning = true;
                             this.timerWorker.postMessage({
                                 type: 'START',
@@ -1484,24 +1437,16 @@
                             this.preventSleep();
                         }
                     },
-                    
-                    // 在暂停时停止所有振动
+            
                     pause() {
                         if (this.isRunning) {
                             this.isRunning = false;
                             this.timerWorker.postMessage({ type: 'PAUSE' });
-                            
-                            // 确保停止任何正在进行的振动
-                            if ('vibrate' in navigator) {
-                                navigator.vibrate(0);
-                            }
-                            
                             this.allowSleep();
                         }
                     },
             
                     toggleTimer() {
-                        this.vibrate();
                         if (this.isRunning) {
                             this.pause();
                         } else {
@@ -1521,7 +1466,6 @@
                     // 模式切换
                     changeMode(mode) {
                         if (mode === this.currentMode) return;
-                        this.vibrate();
                         
                         this.currentMode = mode;
                         this.reset();
@@ -1731,7 +1675,6 @@
                     },
             
                     changeTheme(theme) {
-                        this.vibrate(10);
                         this.settings.theme = theme;
                         this.applyTheme(theme);
                         this.saveSettings();
@@ -1888,12 +1831,9 @@
                     // 页面可见性处理
                     handleVisibilityChange() {
                         if (document.hidden) {
-                            // 页面隐藏时暂停振动以节省电量
-                            if ('vibrate' in navigator) {
-                                navigator.vibrate(0);
-                            }
+                            // 页面隐藏时不需要特殊处理，Worker会继续运行
                         } else {
-                            // 页面可见时恢复状态
+                            // 页面可见时同步状态
                             const savedState = this.loadTimerState();
                             if (savedState && this.isRunning) {
                                 this.timerWorker.postMessage({
