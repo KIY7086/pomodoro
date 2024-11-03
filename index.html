@@ -1078,9 +1078,8 @@
            <i :class="toastIcon"></i>
            <span x-text="toastMessage"></span>
        </div>
-   </div>
-</body>
-<script>
+    </div>
+    <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('pomodoroTimer', () => ({
                 // 基础数据
@@ -1101,8 +1100,9 @@
                 lastTime: null,
                 circumference: 2 * Math.PI * 130,
                 wakeLock: null,
+                notificationSound: null,
                 
-                // 状态和面板控制
+                // 状态和面板控制 
                 showSettings: false,
                 showStatsPanel: false,
                 showToast: false,
@@ -1126,7 +1126,7 @@
                 
                 // 通知相关
                 toastMessage: '',
-                toastType: 'success',
+                toastType: 'success', 
                 toastIcon: 'fas fa-check',
                 
                 // 初始化
@@ -1136,6 +1136,8 @@
                     this.handleResize();
                     this.checkAndUpdateStreak();
                     this.applyTheme(this.settings.theme);
+                    this.initializeNotificationSound();
+                    this.timeLeft = this.times[this.currentMode];
                     
                     window.addEventListener('resize', () => this.handleResize());
                     document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
@@ -1145,16 +1147,48 @@
                         this.requestNotificationPermission();
                     }
                 },
+        
+                // 初始化通知音效
+                initializeNotificationSound() {
+                    try {
+                        const AudioContext = window.AudioContext || window.webkitAudioContext;
+                        if (!AudioContext) return;
+        
+                        const audioContext = new AudioContext();
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+        
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5音
+                        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        
+                        oscillator.start();
+        
+                        this.notificationSound = {
+                            context: audioContext,
+                            oscillator: oscillator,
+                            gainNode: gainNode
+                        };
+                    } catch (error) {
+                        console.warn('Failed to initialize audio:', error);
+                        this.notificationSound = null;
+                    }
+                },
                 
                 // 主题相关
                 applyTheme(theme) {
                     document.documentElement.style.setProperty('--primary', `var(--theme-${theme})`);
                     const themeColor = getComputedStyle(document.documentElement)
                         .getPropertyValue(`--theme-${theme}`).trim();
-                    document.querySelector('meta[name="theme-color"]')
-                        .setAttribute('content', themeColor);
+                    const metaTheme = document.querySelector('meta[name="theme-color"]');
+                    if (metaTheme) {
+                        metaTheme.setAttribute('content', themeColor);
+                    }
                 },
-
+        
                 changeTheme(theme) {
                     this.settings.theme = theme;
                     this.applyTheme(theme);
@@ -1199,271 +1233,291 @@
                 },
                 
                 // 计时器控制功能
-               toggleTimer() {
-                   if (this.isRunning) {
-                       this.pause();
-                   } else {
-                       this.start();
-                   }
-               },
-               
-               start() {
-                   if (!this.isRunning) {
-                       this.isRunning = true;
-                       this.lastTime = performance.now();
-                       this.tick();
-                       this.preventSleep();
-                       
-                       if ('vibrate' in navigator) {
-                           navigator.vibrate(50);
-                       }
-                   }
-               },
-               
-               pause() {
-                   this.isRunning = false;
-                   this.allowSleep();
-                   
-                   if ('vibrate' in navigator) {
-                       navigator.vibrate([50, 50, 50]);
-                   }
-               },
-               
-               tick() {
-                   if (!this.isRunning) return;
-                   
-                   const now = performance.now();
-                   const deltaTime = Math.floor((now - this.lastTime) / 1000);
-                   
-                   if (deltaTime >= 1) {
-                       this.timeLeft = Math.max(0, this.timeLeft - deltaTime);
-                       this.lastTime = now;
-                       
-                       if (this.timeLeft === 0) {
-                           this.timeUp();
-                           return;
-                       }
-                   }
-                   
-                   requestAnimationFrame(() => this.tick());
-               },
-               
-               reset() {
-                   this.pause();
-                   this.timeLeft = this.times[this.currentMode];
-                   this.showToast('计时器已重置', 'info', 'fa-rotate');
-               },
-               
-               // 模式切换
-               changeMode(mode) {
-                   if (mode === this.currentMode) return;
-                   
-                   this.currentMode = mode;
-                   this.timeLeft = this.times[mode];
-                   this.pause();
-                   
-                   gsap.timeline()
-                       .to('.timer-container', {
-                           scale: 0.95,
-                           duration: 0.2,
-                           ease: 'power2.inOut'
-                       })
-                       .to('.timer-container', {
-                           scale: 1,
-                           duration: 0.4,
-                           ease: 'back.out(1.7)'
-                       });
-                   
-                   if ('vibrate' in navigator) {
-                       navigator.vibrate(50);
-                   }
-               },
-               
-               toggleBreakMode() {
-                   if (this.currentMode === 'pomodoro') {
-                       this.changeMode('shortBreak');
-                       return;
-                   }
-                   
-                   const nextMode = this.currentMode === 'shortBreak' ? 'longBreak' : 'shortBreak';
-                   this.changeMode(nextMode);
-               },
-               
-               // 设置相关
-               loadSettings() {
-                   try {
-                       const savedSettings = localStorage.getItem('pomodoroSettings');
-                       if (savedSettings) {
-                           const data = JSON.parse(savedSettings);
-                           this.settings = { ...this.settings, ...data.settings };
-                           this.times = { ...this.times, ...data.times };
-                           this.completedSessions = data.completedSessions || 0;
-                           this.todaySessions = data.todaySessions || 0;
-                           this.totalFocusTime = data.totalFocusTime || 0;
-                           this.currentStreak = data.currentStreak || 0;
-                           this.lastFocusDate = data.lastFocusDate;
-                       }
-                   } catch (error) {
-                       console.error('Error loading settings:', error);
-                       this.showToast('设置加载失败', 'error', 'fa-exclamation-circle');
-                   }
-               },
-               
-               saveSettings() {
-                   try {
-                       localStorage.setItem('pomodoroSettings', JSON.stringify({
-                           settings: this.settings,
-                           times: this.times,
-                           completedSessions: this.completedSessions,
-                           todaySessions: this.todaySessions,
-                           totalFocusTime: this.totalFocusTime,
-                           currentStreak: this.currentStreak,
-                           lastFocusDate: this.lastFocusDate
-                       }));
-                   } catch (error) {
-                       console.error('Error saving settings:', error);
-                       this.showToast('设置保存失败', 'error', 'fa-exclamation-circle');
-                   }
-               },
-               
-               updateTime(mode, minutes) {
-                   const newTime = Math.max(1, Math.min(60, parseInt(minutes) || 1)) * 60;
-                   this.times[mode] = newTime;
-                   
-                   if (mode === this.currentMode) {
-                       this.timeLeft = newTime;
-                   }
-                   
-                   this.saveSettings();
-               },
-               
-               // 统计相关
-               checkAndUpdateStreak() {
-                   const today = new Date().toDateString();
-                   const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
-                   
-                   if (lastDate) {
-                       const daysDiff = Math.floor((new Date(today) - lastDate) / (1000 * 60 * 60 * 24));
-                       if (daysDiff > 1) {
-                           this.currentStreak = 0;
-                           this.saveSettings();
-                       }
-                   }
-               },
-               
-               updateStats() {
-                   const today = new Date().toDateString();
-                   
-                   if (this.lastFocusDate !== today) {
-                       this.todaySessions = 1;
-                       
-                       const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
-                       const yesterday = new Date();
-                       yesterday.setDate(yesterday.getDate() - 1);
-                       
-                       if (lastDate && lastDate.toDateString() === yesterday.toDateString()) {
-                           this.currentStreak++;
-                       } else if (!lastDate || lastDate.toDateString() !== today) {
-                           this.currentStreak = 1;
-                       }
-                   } else {
-                       this.todaySessions++;
-                   }
-                   
-                   this.lastFocusDate = today;
-                   this.totalFocusTime += this.times.pomodoro;
-                   
-                   this.saveSettings();
-               },
-               
-               getNextMode() {
-                   if (this.currentMode === 'pomodoro') {
-                       return this.completedSessions % this.settings.longBreakInterval === 0 
-                           ? 'longBreak' 
-                           : 'shortBreak';
-                   }
-                   return 'pomodoro';
-               },
-               
-               resetStats() {
-                   if (confirm('确定要重置所有统计数据吗？')) {
-                       this.completedSessions = 0;
-                       this.todaySessions = 0;
-                       this.totalFocusTime = 0;
-                       this.currentStreak = 0;
-                       this.lastFocusDate = null;
-                       this.saveSettings();
-                       this.showToast('统计数据已重置', 'info', 'fa-refresh');
-                   }
-               },
-               
-               // 通知相关
-               async playNotificationSound() {
-                   try {
-                       const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgA');
-                       audio.volume = 0.5;
-                       await audio.play();
-                   } catch (error) {
-                       console.warn('Failed to play notification sound:', error);
-                   }
-               },
-               
-               async sendNotification() {
-                   if (!this.settings.notificationsEnabled || 
-                       Notification.permission !== 'granted') return;
-                   
-                   try {
-                       const nextMode = this.getNextMode();
-                       const notification = new Notification(
-                           `${this.modeLabels[this.currentMode]}时间到！`, {
-                           body: `准备开始${this.modeLabels[nextMode]}`,
-                           icon: '/icon-192.png',
-                           badge: '/badge-96.png',
-                           vibrate: [200, 100, 200],
-                           tag: 'pomodoro-notification',
-                           renotify: true
-                       });
-                       
-                       notification.onclick = () => {
-                           window.focus();
-                           notification.close();
-                       };
-                   } catch (error) {
-                       console.error('Error sending notification:', error);
-                   }
-               },
-               
-               async requestNotificationPermission() {
-                   if (!('Notification' in window)) {
-                       this.settings.notificationsEnabled = false;
-                       this.showToast('你的浏览器不支持通知功能', 'error', 'fa-exclamation-circle');
-                       return;
-                   }
-                   
-                   try {
-                       const permission = await Notification.requestPermission();
-                       if (permission !== 'granted') {
-                           this.settings.notificationsEnabled = false;
-                           this.showToast('通知权限被拒绝', 'warning', 'fa-exclamation-triangle');
-                       }
-                   } catch (error) {
-                       console.error('Error requesting notification permission:', error);
-                       this.settings.notificationsEnabled = false;
-                   }
-                   
-                   this.saveSettings();
-               },
-               
-               // 系统相关
-               preventSleep() {
-                   if ('wakeLock' in navigator) {
-                       navigator.wakeLock.request('screen')
-                           .then(lock => this.wakeLock = lock)
-                           .catch(() => {});
-                   }
-               },
-               
-               allowSleep() {
+                toggleTimer() {
+                    if (this.isRunning) {
+                        this.pause();
+                    } else {
+                        this.start();
+                    }
+                },
+                
+                start() {
+                    if (!this.isRunning) {
+                        this.isRunning = true;
+                        this.lastTime = performance.now();
+                        this.tick();
+                        this.preventSleep();
+                        
+                        if ('vibrate' in navigator) {
+                            navigator.vibrate(50);
+                        }
+                    }
+                },
+                
+                pause() {
+                    this.isRunning = false;
+                    this.allowSleep();
+                    
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate([50, 50, 50]);
+                    }
+                },
+                
+                tick() {
+                    if (!this.isRunning) return;
+                    
+                    const now = performance.now();
+                    const deltaTime = Math.floor((now - this.lastTime) / 1000);
+                    
+                    if (deltaTime >= 1) {
+                        this.timeLeft = Math.max(0, this.timeLeft - deltaTime);
+                        this.lastTime = now;
+                        
+                        if (this.timeLeft === 0) {
+                            this.timeUp();
+                            return;
+                        }
+                    }
+                    
+                    requestAnimationFrame(() => this.tick());
+                },
+                
+                reset() {
+                    this.pause();
+                    this.timeLeft = this.times[this.currentMode];
+                    this.showToast('计时器已重置', 'info', 'fa-rotate');
+                },
+                
+                // 模式切换
+                changeMode(mode) {
+                    if (mode === this.currentMode) return;
+                    
+                    this.currentMode = mode;
+                    this.timeLeft = this.times[mode];
+                    this.pause();
+                    
+                    gsap.timeline()
+                        .to('.timer-container', {
+                            scale: 0.95,
+                            duration: 0.2,
+                            ease: 'power2.inOut'
+                        })
+                        .to('.timer-container', {
+                            scale: 1,
+                            duration: 0.4,
+                            ease: 'back.out(1.7)'
+                        });
+                    
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(50);
+                    }
+                },
+                
+                toggleBreakMode() {
+                    if (this.currentMode === 'pomodoro') {
+                        this.changeMode('shortBreak');
+                        return;
+                    }
+                    
+                    const nextMode = this.currentMode === 'shortBreak' ? 'longBreak' : 'shortBreak';
+                    this.changeMode(nextMode);
+                },
+                
+                // 设置相关
+                loadSettings() {
+                    try {
+                        const savedSettings = localStorage.getItem('pomodoroSettings');
+                        if (savedSettings) {
+                            const data = JSON.parse(savedSettings);
+                            this.settings = { ...this.settings, ...data.settings };
+                            this.times = { ...this.times, ...data.times };
+                            this.completedSessions = data.completedSessions || 0;
+                            this.todaySessions = data.todaySessions || 0;
+                            this.totalFocusTime = data.totalFocusTime || 0;
+                            this.currentStreak = data.currentStreak || 0;
+                            this.lastFocusDate = data.lastFocusDate;
+                        }
+                    } catch (error) {
+                        console.error('Error loading settings:', error);
+                        this.showToast('设置加载失败', 'error', 'fa-exclamation-circle');
+                    }
+                },
+                
+                saveSettings() {
+                    try {
+                        localStorage.setItem('pomodoroSettings', JSON.stringify({
+                            settings: this.settings,
+                            times: this.times,
+                            completedSessions: this.completedSessions,
+                            todaySessions: this.todaySessions,
+                            totalFocusTime: this.totalFocusTime,
+                            currentStreak: this.currentStreak,
+                            lastFocusDate: this.lastFocusDate
+                        }));
+                    } catch (error) {
+                        console.error('Error saving settings:', error);
+                        this.showToast('设置保存失败', 'error', 'fa-exclamation-circle');
+                    }
+                },
+                
+                updateTime(mode, minutes) {
+                    const newTime = Math.max(1, Math.min(60, parseInt(minutes) || 1)) * 60;
+                    this.times[mode] = newTime;
+                    
+                    if (mode === this.currentMode) {
+                        this.timeLeft = newTime;
+                    }
+                    
+                    this.saveSettings();
+                },
+                
+                // 统计相关
+                checkAndUpdateStreak() {
+                    const today = new Date().toDateString();
+                    const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
+                    
+                    if (lastDate) {
+                        const daysDiff = Math.floor((new Date(today) - lastDate) / (1000 * 60 * 60 * 24));
+                        if (daysDiff > 1) {
+                            this.currentStreak = 0;
+                            this.saveSettings();
+                        }
+                    }
+                },
+                
+                updateStats() {
+                    const today = new Date().toDateString();
+                    
+                    if (this.lastFocusDate !== today) {
+                        this.todaySessions = 1;
+                        
+                        const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        
+                        if (lastDate && lastDate.toDateString() === yesterday.toDateString()) {
+                            this.currentStreak++;
+                        } else if (!lastDate || lastDate.toDateString() !== today) {
+                            this.currentStreak = 1;
+                        }
+                    } else {
+                        this.todaySessions++;
+                    }
+                    
+                    this.lastFocusDate = today;
+                    this.totalFocusTime += this.times.pomodoro;
+                    
+                    this.saveSettings();
+                },
+                
+                getNextMode() {
+                    if (this.currentMode === 'pomodoro') {
+                        return this.completedSessions % this.settings.longBreakInterval === 0 
+                            ? 'longBreak' 
+                            : 'shortBreak';
+                    }
+                    return 'pomodoro';
+                },
+                
+                resetStats() {
+                    if (confirm('确定要重置所有统计数据吗？')) {
+                        this.completedSessions = 0;
+                        this.todaySessions = 0;
+                        this.totalFocusTime = 0;
+                        this.currentStreak = 0;
+                        this.lastFocusDate = null;
+                        this.saveSettings();
+                        this.showToast('统计数据已重置', 'info', 'fa-refresh');
+                    }
+                },
+                
+                // 通知相关
+                async playNotificationSound() {
+                    if (!this.settings.soundEnabled || !this.notificationSound) return;
+        
+                    try {
+                        const { context, gainNode } = this.notificationSound;
+                        
+                        // 如果上下文被挂起，重新开启
+                        if (context.state === 'suspended') {
+                            await context.resume();
+                        }
+        
+                        // 设置音量包络
+                        const time = context.currentTime;
+                        gainNode.gain.cancelScheduledValues(time);
+                        gainNode.gain.setValueAtTime(0, time);
+                        gainNode.gain.linearRampToValueAtTime(0.5, time + 0.01);
+                        gainNode.gain.linearRampToValueAtTime(0, time + 0.3);
+                        
+                        // 500ms后重置音量
+                        setTimeout(() => {
+                            gainNode.gain.setValueAtTime(0, context.currentTime);
+                        }, 500);
+                    } catch (error) {
+                        console.warn('Failed to play notification sound:', error);
+                    }
+                },
+                
+                async sendNotification() {
+                    if (!this.settings.notificationsEnabled || Notification.permission !== 'granted') return;
+                    
+                    try {
+                        const nextMode = this.getNextMode();
+                        const notification = new Notification(
+                            `${this.modeLabels[this.currentMode]}时间到！`, {
+                            body: `准备开始${this.modeLabels[nextMode]}`,
+                            icon: '/icons/icon-192x192.png',
+                            vibrate: [200, 100, 200],
+                            tag: 'pomodoro-notification',
+                            renotify: true,
+                            requireInteraction: true
+                        });
+                        
+                        notification.onclick = () => {
+                            window.focus();
+                            notification.close();
+                        };
+                    } catch (error) {
+                        console.error('Error sending notification:', error);
+                    }
+                },
+                
+                async requestNotificationPermission() {
+                    if (!('Notification' in window)) {
+                        this.settings.notificationsEnabled = false;
+                        this.showToast('你的浏览器不支持通知功能', 'error', 'fa-exclamation-circle');
+                        return;
+                    }
+                    
+                    try {
+                        const permission = await Notification.requestPermission();
+                        if (permission === 'granted') {
+                            this.settings.notificationsEnabled = true;
+                            this.showToast('通知权限已开启', 'success', 'fa-bell');
+                        } else {
+                            this.settings.notificationsEnabled = false;
+                            this.showToast('通知权限被拒绝', 'warning', 'fa-exclamation-triangle');
+                        }
+                    } catch (error) {
+                        console.error('Error requesting notification permission:', error);
+                        this.settings.notificationsEnabled = false;
+                        this.showToast('请求通知权限失败', 'error', 'fa-exclamation-circle');
+                    }
+                    
+                    this.saveSettings();
+                },
+        
+                // 系统相关
+                preventSleep() {
+                    if ('wakeLock' in navigator) {
+                        navigator.wakeLock.request('screen')
+                            .then(lock => this.wakeLock = lock)
+                            .catch(() => {});
+                    }
+                },
+                
+                allowSleep() {
                    if (this.wakeLock) {
                        this.wakeLock.release().then(() => {
                            this.wakeLock = null;
@@ -1498,7 +1552,7 @@
                },
                
                // 计时结束处理
-               timeUp() {
+               async timeUp() {
                    this.pause();
                    
                    if (this.currentMode === 'pomodoro') {
@@ -1506,11 +1560,15 @@
                        this.updateStats();
                    }
                    
-                   if (this.settings.soundEnabled) {
-                       this.playNotificationSound();
-                   }
+                   // 同时触发声音和系统通知
+                   await Promise.all([
+                       this.settings.soundEnabled && this.playNotificationSound(),
+                       this.settings.notificationsEnabled && this.sendNotification()
+                   ]);
                    
-                   this.sendNotification();
+                   if ('vibrate' in navigator) {
+                       navigator.vibrate([200, 100, 200]);
+                   }
                    
                    gsap.timeline()
                        .to('.timer-container', {
@@ -1541,12 +1599,16 @@
                
                // UI 控制
                showToast(message, type = 'success', icon = 'fa-check') {
+                   if (this.toastTimeout) {
+                       clearTimeout(this.toastTimeout);
+                   }
+        
                    this.toastMessage = message;
                    this.toastType = type;
                    this.toastIcon = `fas ${icon}`;
                    this.showToast = true;
                    
-                   setTimeout(() => {
+                   this.toastTimeout = setTimeout(() => {
                        this.hideToast();
                    }, 3000);
                },
@@ -1557,10 +1619,15 @@
                
                openSettings() {
                    this.showSettings = true;
+                   // 确保通知权限状态是最新的
+                   if (this.settings.notificationsEnabled && Notification.permission !== 'granted') {
+                       this.settings.notificationsEnabled = false;
+                   }
                },
                
                closeSettings() {
                    this.showSettings = false;
+                   this.saveSettings();
                },
                
                openStatsPanel() {
@@ -1570,8 +1637,8 @@
                closeStatsPanel() {
                    this.showStatsPanel = false;
                }
-           }))
-       });
+           }));
+        });
    </script>
 </body>
 </html>
