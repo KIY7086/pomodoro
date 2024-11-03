@@ -1280,6 +1280,27 @@
                         autoStartPomodoro: false,
                         longBreakInterval: 4
                     },
+                    
+                    watchSettings: {
+                        'settings.soundEnabled'(newValue) {
+                            const status = newValue ? '开启' : '关闭';
+                            this.showToast(`声音提醒已${status}`, 'info', newValue ? 'fa-volume-high' : 'fa-volume-xmark');
+                            this.saveSettings();
+                        },
+                        
+                        'settings.autoStartBreak'(newValue) {
+                            const status = newValue ? '开启' : '关闭';
+                            this.showToast(`自动开始休息已${status}`, 'info', 'fa-rotate');
+                            this.saveSettings();
+                        },
+                        
+                        'settings.autoStartPomodoro'(newValue) {
+                            const status = newValue ? '开启' : '关闭';
+                            this.showToast(`自动开始专注已${status}`, 'info', 'fa-rotate');
+                            this.saveSettings();
+                        }
+                    },
+
             
                     // Toast系统
                     toast: {
@@ -1294,6 +1315,7 @@
             
                     // 初始化
                     init() {
+                        // 保留原有的 init 代码
                         this.loadSettings();
                         this.initWorker();
                         this.setupCircle();
@@ -1301,12 +1323,17 @@
                         this.checkAndUpdateStreak();
                         this.applyTheme(this.settings.theme);
                         
-                        // 事件监听器设置
+                        // 添加设置变化的监听
+                        this.$watch('settings.soundEnabled', this.watchSettings['settings.soundEnabled'].bind(this));
+                        this.$watch('settings.autoStartBreak', this.watchSettings['settings.autoStartBreak'].bind(this));
+                        this.$watch('settings.autoStartPomodoro', this.watchSettings['settings.autoStartPomodoro'].bind(this));
+                        
+                        // 其他原有的事件监听
                         window.addEventListener('resize', () => this.handleResize());
                         document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
                         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
                         window.addEventListener('beforeunload', () => this.cleanup());
-            
+                    
                         // 检查通知权限
                         if (this.settings.notificationsEnabled) {
                             if (Notification.permission !== 'granted') {
@@ -1532,20 +1559,39 @@
             
                     // 通知系统
                     async requestNotificationPermission() {
+                        // 如果用户关闭了通知开关
+                        if (!this.settings.notificationsEnabled) {
+                            // 确保关闭所有通知相关功能
+                            if ('Notification' in window && Notification.permission === 'granted') {
+                                this.showToast('通知已关闭', 'info', 'fa-bell-slash');
+                            }
+                            this.saveSettings();
+                            return;
+                        }
+                    
+                        // 检查浏览器是否支持通知
                         if (!('Notification' in window)) {
                             this.settings.notificationsEnabled = false;
                             this.showToast('你的浏览器不支持通知功能', 'error', 'fa-exclamation-circle');
                             this.saveSettings();
                             return;
                         }
-            
+                    
                         try {
                             const permission = await Notification.requestPermission();
+                            // 根据用户选择更新设置
                             this.settings.notificationsEnabled = permission === 'granted';
                             
                             if (permission === 'granted') {
-                                this.showToast('通知权限已开启', 'success', 'fa-bell');
+                                this.showToast('通知已开启', 'success', 'fa-bell');
+                                // 发送测试通知
+                                new Notification('通知测试', {
+                                    body: '专注时钟的通知已成功开启',
+                                    icon: '/icons/icon-192x192.png',
+                                    silent: !this.settings.soundEnabled
+                                });
                             } else {
+                                this.settings.notificationsEnabled = false;
                                 this.showToast('通知权限被拒绝', 'warning', 'fa-exclamation-triangle');
                             }
                             
@@ -1559,13 +1605,29 @@
                     },
             
                     showNotification(title, body) {
-                        if (this.settings.notificationsEnabled && Notification.permission === 'granted') {
+                        // 严格检查通知开关状态
+                        if (!this.settings.notificationsEnabled || !('Notification' in window)) {
+                            return;
+                        }
+                        
+                        if (Notification.permission === 'granted') {
                             try {
-                                new Notification(title, {
+                                const notification = new Notification(title, {
                                     body,
                                     icon: '/icons/icon-192x192.png',
-                                    badge: '/icons/icon-192x192.png'
+                                    badge: '/icons/icon-192x192.png',
+                                    silent: !this.settings.soundEnabled, // 根据声音设置控制通知声音
+                                    requireInteraction: true // 通知会保持直到用户交互
                                 });
+                    
+                                // 点击通知时的处理
+                                notification.onclick = () => {
+                                    window.focus();
+                                    notification.close();
+                                };
+                    
+                                // 自动关闭通知（5秒后）
+                                setTimeout(() => notification.close(), 5000);
                             } catch (error) {
                                 console.error('Error showing notification:', error);
                             }
@@ -1708,15 +1770,21 @@
                             this.completedSessions++;
                             this.updateStats();
                             
+                            // 只有在声音开启时才播放声音
                             if (this.settings.soundEnabled) {
                                 this.playCompletionSound();
                             }
                             
-                            this.showNotification('专注完成！', '是时候休息一下了。');
+                            // 只有在通知开启时才显示通知
+                            if (this.settings.notificationsEnabled) {
+                                this.showNotification('专注完成！', `恭喜你完成第 ${this.completedSessions} 次专注！是时候休息一下了。`);
+                            }
                         } else {
-                            this.showNotification('休息结束！', '准备开始新的专注。');
+                            if (this.settings.notificationsEnabled) {
+                                this.showNotification('休息结束！', '准备开始新的专注。');
+                            }
                         }
-            
+                    
                         // 添加完成动画
                         gsap.timeline()
                             .to('.timer-container', {
@@ -1729,12 +1797,12 @@
                                 duration: 0.5,
                                 ease: 'elastic.out(1, 0.3)'
                             });
-            
+                    
                         const nextMode = this.getNextMode();
                         const shouldAutoStart = 
                             (nextMode === 'pomodoro' && this.settings.autoStartPomodoro) ||
                             (nextMode !== 'pomodoro' && this.settings.autoStartBreak);
-            
+                    
                         if (shouldAutoStart) {
                             setTimeout(() => {
                                 this.changeMode(nextMode);
@@ -1743,7 +1811,7 @@
                         } else {
                             this.changeMode(nextMode);
                         }
-                    },
+                    }
             
                     // 获取下一个模式
                     getNextMode() {
@@ -1757,27 +1825,34 @@
             
                     // 声音效果
                     playCompletionSound() {
+                        if (!this.settings.soundEnabled) {
+                            return;
+                        }
+                    
                         try {
                             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                             const oscillator = audioContext.createOscillator();
                             const gainNode = audioContext.createGain();
-            
+                    
                             oscillator.connect(gainNode);
                             gainNode.connect(audioContext.destination);
-            
+                    
+                            // 使用更柔和的音色
                             oscillator.type = 'sine';
-                            oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-            
+                            oscillator.frequency.setValueAtTime(660, audioContext.currentTime); // 降低频率使声音更温和
+                    
+                            // 更平滑的音量控制
                             gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                            gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01);
-                            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
-            
+                            gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1); // 降低最大音量
+                            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+                    
                             oscillator.start();
-                            oscillator.stop(audioContext.currentTime + 0.5);
+                            oscillator.stop(audioContext.currentTime + 0.6);
                         } catch (error) {
                             console.error('Error playing completion sound:', error);
                         }
                     },
+
             
                     // 面板控制
                     openSettings() {
