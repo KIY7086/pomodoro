@@ -11,6 +11,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="apple-touch-icon" href="icons/icon-512x512.png">
+    <script>
+    // 注册Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      });
+    }
+    </script>
     <style>
         :root {
             /* 主题色预设 */
@@ -571,53 +585,178 @@
            font-weight: 500;
        }
 
-       /* Toast 通知 */
-       .toast {
-           position: fixed;
-           bottom: calc(var(--nav-height) + var(--nav-bottom-space) + 1rem);
-           left: 50%;
-           transform: translateX(-50%) translateY(100px);
-           background: var(--surface);
-           color: var(--text);
-           padding: 0.875rem 1.25rem;
-           border-radius: var(--radius-full);
-           box-shadow: var(--shadow-lg);
-           display: flex;
-           align-items: center;
-           gap: 0.75rem;
-           z-index: 10000;
-           opacity: 0;
-           transition: all var(--transition-normal) var(--ease-bounce);
-       }
-       
-       .toast.show {
-           transform: translateX(-50%) translateY(0);
-           opacity: 1;
-       }
-       
-       .toast i {
-           font-size: 1.125rem;
-       }
-       
-       .toast.success {
-           background: var(--success);
-           color: white;
-       }
-       
-       .toast.error {
-           background: var(--error);
-           color: white;
-       }
-       
-       .toast.warning {
-           background: var(--warning);
-           color: white;
-       }
-       
-       .toast.info {
-           background: var(--info);
-           color: white;
-       }
+       /* Toast 通知样式优化 */
+        .toast {
+            position: fixed;
+            bottom: calc(var(--nav-height) + var(--nav-bottom-space) + 1rem);
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 0.875rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 10000;
+            opacity: 0;
+            transition: all var(--transition-normal) var(--ease-bounce);
+            max-width: min(calc(100% - 2rem), 24rem);
+            box-shadow: 
+                0 8px 16px rgba(0, 0, 0, 0.1),
+                0 2px 4px rgba(0, 0, 0, 0.05);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .toast i {
+            font-size: 1.25rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .toast span {
+            line-height: 1.4;
+        }
+        
+        /* Toast 颜色样式 */
+        .toast.success {
+            background: rgba(16, 185, 129, 0.98);
+            color: white;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        
+        .toast.error {
+            background: rgba(239, 68, 68, 0.98);
+            color: white;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        
+        .toast.warning {
+            background: rgba(245, 158, 11, 0.98);
+            color: white;
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+        
+        .toast.info {
+            background: rgba(59, 130, 246, 0.98);
+            color: white;
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+        
+        /* Toast 动画效果 */
+        .toast {
+            animation: toast-enter var(--transition-normal) var(--ease-bounce);
+        }
+        
+        @keyframes toast-enter {
+            0% {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Toast 自适应样式 */
+        @media (max-width: 480px) {
+            .toast {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.875rem;
+                gap: 0.625rem;
+                max-width: calc(100% - 2rem);
+            }
+        
+            .toast i {
+                font-size: 1.125rem;
+            }
+        }
+        
+        /* Toast 暗色模式适配 */
+        @media (prefers-color-scheme: dark) {
+            .toast {
+                box-shadow: 
+                    0 8px 16px rgba(0, 0, 0, 0.3),
+                    0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+        
+            /* 暗色模式下各种状态的背景色调整 */
+            .toast.success {
+                background: rgba(16, 185, 129, 0.95);
+            }
+        
+            .toast.error {
+                background: rgba(239, 68, 68, 0.95);
+            }
+        
+            .toast.warning {
+                background: rgba(245, 158, 11, 0.95);
+            }
+        
+            .toast.info {
+                background: rgba(59, 130, 246, 0.95);
+            }
+        }
+        
+        /* Toast 点击效果 */
+        .toast {
+            cursor: pointer;
+            transition: all var(--transition-normal) var(--ease-spring);
+        }
+        
+        .toast:active {
+            transform: translateX(-50%) translateY(2px) scale(0.98);
+        }
+        
+        /* Toast 图标动画 */
+        .toast i {
+            transition: transform var(--transition-normal) var(--ease-spring);
+        }
+        
+        .toast:hover i {
+            transform: scale(1.1);
+        }
+        
+        /* Toast 堆叠效果 */
+        .toast + .toast {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Toast 内容溢出处理 */
+        .toast span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Toast 消失动画 */
+        .toast.hide {
+            animation: toast-exit var(--transition-normal) var(--ease-spring) forwards;
+        }
+        
+        @keyframes toast-exit {
+            0% {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+        }
        
        /* 定时器标签样式 */
         .timer-label {
@@ -1089,6 +1228,8 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('pomodoroTimer', () => ({
                 // 基础数据
+                timerId: crypto.randomUUID(), // 用于Service Worker通信的唯一ID
+                swRegistration: null,         // Service Worker注册信息
                 size: 280,
                 times: {
                     pomodoro: 25 * 60,
@@ -1107,9 +1248,9 @@
                 circumference: 2 * Math.PI * 130,
                 wakeLock: null,
                 notificationSound: null,
-                toastTimeout: null, // 用于管理Toast的定时器
+                toastTimeout: null,
                 
-                // 状态和面板控制 
+                // 状态和面板控制
                 showSettings: false,
                 showStatsPanel: false,
                 showToast: false,
@@ -1138,10 +1279,10 @@
                     icon: 'fas fa-check',
                     show: false,
                     duration: 3000,
-                    queue: [], // Toast队列
-                    processing: false // 是否正在处理队列
+                    queue: [],
+                    processing: false
                 },
-                
+        
                 // 初始化
                 init() {
                     this.loadSettings();
@@ -1149,7 +1290,7 @@
                     this.handleResize();
                     this.checkAndUpdateStreak();
                     this.applyTheme(this.settings.theme);
-                    this.initializeNotificationSound();
+                    this.setupServiceWorker(); // 添加Service Worker初始化
                     this.timeLeft = this.times[this.currentMode];
                     
                     // 检查通知权限状态
@@ -1163,11 +1304,41 @@
                     window.addEventListener('resize', () => this.handleResize());
                     document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
                     document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+                    window.addEventListener('beforeunload', () => this.handleBeforeUnload());
+                },
+        
+                // Service Worker设置
+                async setupServiceWorker() {
+                    if (!('serviceWorker' in navigator)) return;
+        
+                    try {
+                        const registration = await navigator.serviceWorker.register('/service-worker.js');
+                        this.swRegistration = registration;
+        
+                        navigator.serviceWorker.addEventListener('message', (event) => {
+                            const { type, payload } = event.data;
+                            
+                            switch (type) {
+                                case 'TIME_UPDATE':
+                                    if (payload.timerId === this.timerId) {
+                                        this.timeLeft = payload.timeLeft;
+                                    }
+                                    break;
+                                case 'TIMER_COMPLETE':
+                                    this.handleTimerComplete(payload.mode);
+                                    break;
+                                case 'NOTIFICATION_ACTION':
+                                    this.handleNotificationAction(payload.action);
+                                    break;
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Service Worker registration failed:', error);
+                    }
                 },
         
                 // Toast系统
                 showToast(message, type = 'success', icon = 'fa-check', duration = 3000) {
-                    // 添加到队列
                     this.toast.queue.push({
                         message,
                         type,
@@ -1175,7 +1346,6 @@
                         duration
                     });
                     
-                    // 如果没有正在处理的Toast，开始处理队列
                     if (!this.toast.processing) {
                         this.processToastQueue();
                     }
@@ -1190,78 +1360,25 @@
                     this.toast.processing = true;
                     const { message, type, icon, duration } = this.toast.queue.shift();
                     
-                    // 如果已有Toast在显示，先隐藏它
                     if (this.toast.show) {
                         this.toast.show = false;
-                        await new Promise(resolve => setTimeout(resolve, 300)); // 等待淡出动画
+                        await new Promise(resolve => setTimeout(resolve, 300));
                     }
                     
-                    // 显示新Toast
                     this.toast.message = message;
                     this.toast.type = type;
                     this.toast.icon = icon;
                     this.toast.show = true;
                     
-                    // 设置自动隐藏
                     setTimeout(async () => {
                         this.toast.show = false;
-                        await new Promise(resolve => setTimeout(resolve, 300)); // 等待淡出动画
-                        
-                        // 处理队列中的下一个
+                        await new Promise(resolve => setTimeout(resolve, 300));
                         this.processToastQueue();
                     }, duration);
                 },
-        
+                
                 hideToast() {
                     this.toast.show = false;
-                },
-                
-                // 初始化通知音效
-                initializeNotificationSound() {
-                    try {
-                        const AudioContext = window.AudioContext || window.webkitAudioContext;
-                        if (!AudioContext) return;
-        
-                        const audioContext = new AudioContext();
-                        const oscillator = audioContext.createOscillator();
-                        const gainNode = audioContext.createGain();
-        
-                        oscillator.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-        
-                        oscillator.type = 'sine';
-                        oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5音
-                        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        
-                        oscillator.start();
-        
-                        this.notificationSound = {
-                            context: audioContext,
-                            oscillator: oscillator,
-                            gainNode: gainNode
-                        };
-                    } catch (error) {
-                        console.warn('Failed to initialize audio:', error);
-                        this.notificationSound = null;
-                    }
-                },
-                
-                // 主题相关
-                applyTheme(theme) {
-                    document.documentElement.style.setProperty('--primary', `var(--theme-${theme})`);
-                    const themeColor = getComputedStyle(document.documentElement)
-                        .getPropertyValue(`--theme-${theme}`).trim();
-                    const metaTheme = document.querySelector('meta[name="theme-color"]');
-                    if (metaTheme) {
-                        metaTheme.setAttribute('content', themeColor);
-                    }
-                },
-        
-                changeTheme(theme) {
-                    this.settings.theme = theme;
-                    this.applyTheme(theme);
-                    this.saveSettings();
-                    this.showToast('主题已更新', 'success', 'fa-palette');
                 },
                 
                 // 计时器核心逻辑
@@ -1301,19 +1418,23 @@
                 },
                 
                 // 计时器控制功能
-                toggleTimer() {
-                    if (this.isRunning) {
-                        this.pause();
-                    } else {
-                        this.start();
-                    }
-                },
-                
                 start() {
                     if (!this.isRunning) {
                         this.isRunning = true;
                         this.lastTime = performance.now();
-                        this.tick();
+                        
+                        if (navigator.serviceWorker?.controller) {
+                            navigator.serviceWorker.controller.postMessage({
+                                type: 'START_TIMER',
+                                payload: {
+                                    timerId: this.timerId,
+                                    duration: this.times[this.currentMode],
+                                    initialTime: this.timeLeft,
+                                    mode: this.currentMode
+                                }
+                            });
+                        }
+                        
                         this.preventSleep();
                         
                         if ('vibrate' in navigator) {
@@ -1324,6 +1445,14 @@
                 
                 pause() {
                     this.isRunning = false;
+                    
+                    if (navigator.serviceWorker?.controller) {
+                        navigator.serviceWorker.controller.postMessage({
+                            type: 'PAUSE_TIMER',
+                            payload: { timerId: this.timerId }
+                        });
+                    }
+                    
                     this.allowSleep();
                     
                     if ('vibrate' in navigator) {
@@ -1331,31 +1460,28 @@
                     }
                 },
                 
-                tick() {
-                    if (!this.isRunning) return;
-                    
-                    const now = performance.now();
-                    const deltaTime = Math.floor((now - this.lastTime) / 1000);
-                    
-                    if (deltaTime >= 1) {
-                        this.timeLeft = Math.max(0, this.timeLeft - deltaTime);
-                        this.lastTime = now;
-                        
-                        if (this.timeLeft === 0) {
-                            this.timeUp();
-                            return;
-                        }
+                toggleTimer() {
+                    if (this.isRunning) {
+                        this.pause();
+                    } else {
+                        this.start();
                     }
-                    
-                    requestAnimationFrame(() => this.tick());
                 },
-                
+        
                 reset() {
                     this.pause();
                     this.timeLeft = this.times[this.currentMode];
+                    
+                    if (navigator.serviceWorker?.controller) {
+                        navigator.serviceWorker.controller.postMessage({
+                            type: 'RESET_TIMER',
+                            payload: { timerId: this.timerId }
+                        });
+                    }
+                    
                     this.showToast('计时器已重置', 'info', 'fa-rotate');
                 },
-                
+        
                 // 模式切换
                 changeMode(mode) {
                     if (mode === this.currentMode) return;
@@ -1390,7 +1516,7 @@
                     const nextMode = this.currentMode === 'shortBreak' ? 'longBreak' : 'shortBreak';
                     this.changeMode(nextMode);
                 },
-                
+        
                 // 设置相关
                 loadSettings() {
                     try {
@@ -1427,130 +1553,8 @@
                         this.showToast('设置保存失败', 'error', 'fa-exclamation-circle');
                     }
                 },
-                
-                updateTime(mode, minutes) {
-                    const newTime = Math.max(1, Math.min(60, parseInt(minutes) || 1)) * 60;
-                    this.times[mode] = newTime;
-                    
-                    if (mode === this.currentMode) {
-                        this.timeLeft = newTime;
-                    }
-                    
-                    this.saveSettings();
-                },
-                
-                // 统计相关
-                checkAndUpdateStreak() {
-                    const today = new Date().toDateString();
-                    const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
-                    
-                    if (lastDate) {
-                        const daysDiff = Math.floor((new Date(today) - lastDate) / (1000 * 60 * 60 * 24));
-                        if (daysDiff > 1) {
-                            this.currentStreak = 0;
-                            this.saveSettings();
-                        }
-                    }
-                },
-                
-                updateStats() {
-                    const today = new Date().toDateString();
-                    
-                    if (this.lastFocusDate !== today) {
-                        this.todaySessions = 1;
-                        
-                        const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
-                        const yesterday = new Date();
-                        yesterday.setDate(yesterday.getDate() - 1);
-                        
-                        if (lastDate && lastDate.toDateString() === yesterday.toDateString()) {
-                            this.currentStreak++;
-                        } else if (!lastDate || lastDate.toDateString() !== today) {
-                            this.currentStreak = 1;
-                        }
-                    } else {
-                        this.todaySessions++;
-                    }
-                    
-                    this.lastFocusDate = today;
-                    this.totalFocusTime += this.times.pomodoro;
-                    
-                    this.saveSettings();
-                },
-                
-                getNextMode() {
-                    if (this.currentMode === 'pomodoro') {
-                        return this.completedSessions % this.settings.longBreakInterval === 0 
-                            ? 'longBreak' 
-                            : 'shortBreak';
-                    }
-                    return 'pomodoro';
-                },
-                
-                resetStats() {
-                    if (confirm('确定要重置所有统计数据吗？')) {
-                        this.completedSessions = 0;
-                        this.todaySessions = 0;
-                        this.totalFocusTime = 0;
-                        this.currentStreak = 0;
-                        this.lastFocusDate = null;
-                        this.saveSettings();
-                        this.showToast('统计数据已重置', 'info', 'fa-refresh');
-                    }
-                },
-                
+        
                 // 通知相关
-                async playNotificationSound() {
-                    if (!this.settings.soundEnabled || !this.notificationSound) return;
-        
-                    try {
-                        const { context, gainNode } = this.notificationSound;
-                        
-                        // 如果上下文被挂起，重新开启
-                        if (context.state === 'suspended') {
-                            await context.resume();
-                        }
-        
-                        // 设置音量包络
-                        const time = context.currentTime;
-                        gainNode.gain.cancelScheduledValues(time);
-                        gainNode.gain.setValueAtTime(0, time);
-                        gainNode.gain.linearRampToValueAtTime(0.5, time + 0.01);
-                        gainNode.gain.linearRampToValueAtTime(0, time + 0.3);
-                        
-                        // 500ms后重置音量
-                        setTimeout(() => {
-                            gainNode.gain.setValueAtTime(0, context.currentTime);
-                        }, 500);
-                    } catch (error) {
-                        console.warn('Failed to play notification sound:', error);
-                    }
-                },
-                
-                async sendNotification() {
-                    if (!this.settings.notificationsEnabled || Notification.permission !== 'granted') return;
-                    
-                    try {
-                        const nextMode = this.getNextMode();
-                        const notification = new Notification(
-                            `${this.modeLabels[this.currentMode]}时间到！`, {
-                            body: `准备开始${this.modeLabels[nextMode]}`,
-                            icon: '/icons/icon-192x192.png',
-                            vibrate: [200, 100, 200],
-                            tag: 'pomodoro-notification',
-                            renotify: true,
-                            requireInteraction: true
-                        });
-                        
-                        notification.onclick = () => {
-                            window.focus();
-                            notification.close();
-                        };
-                    } catch (error) {
-                        console.error('Error sending notification:', error);
-                    }
-                },
-                
                 async requestNotificationPermission() {
                     if (!('Notification' in window)) {
                         this.settings.notificationsEnabled = false;
@@ -1592,11 +1596,23 @@
                     }
                 },
         
-                async handleNotificationToggle() {
-                    if (this.settings.notificationsEnabled) {
-                        await this.requestNotificationPermission();
-                    } else {
-                        this.saveSettings();
+                // 处理通知动作
+                handleNotificationAction(action) {
+                    switch (action) {
+                        case 'START_BREAK':
+                            this.changeMode(this.getNextMode());
+                            this.start();
+                            break;
+                        case 'CONTINUE_WORK':
+                            this.reset();
+                            break;
+                        case 'START_WORK':
+                            this.changeMode('pomodoro');
+                            this.start();
+                            break;
+                        case 'CONTINUE_BREAK':
+                            this.reset();
+                            break;
                     }
                 },
         
@@ -1610,106 +1626,235 @@
                 },
                 
                 allowSleep() {
-                   if (this.wakeLock) {
-                       this.wakeLock.release().then(() => {
-                           this.wakeLock = null;
-                       });
-                   }
-               },
-               
-               handleVisibilityChange() {
-                   if (document.hidden) {
-                       this.lastTime = performance.now();
-                   } else if (this.isRunning) {
-                       const now = performance.now();
-                       const elapsed = Math.floor((now - this.lastTime) / 1000);
-                       this.timeLeft = Math.max(0, this.timeLeft - elapsed);
-                       this.lastTime = now;
-                       
-                       if (this.timeLeft === 0) {
-                           this.timeUp();
-                       }
-                   }
-               },
-               
-               handleKeyPress(e) {
-                   if (e.code === 'Space' && !this.showSettings && !this.showStatsPanel) {
-                       e.preventDefault();
-                       this.toggleTimer();
-                   }
-                   else if (e.code === 'Escape') {
-                       if (this.showSettings) this.closeSettings();
-                       if (this.showStatsPanel) this.closeStatsPanel();
-                   }
-               },
-               
-               // 计时结束处理
-               async timeUp() {
-                   this.pause();
-                   
-                   if (this.currentMode === 'pomodoro') {
-                       this.completedSessions++;
-                       this.updateStats();
-                   }
-                   
-                   // 同时触发声音和系统通知
-                   await Promise.all([
-                       this.settings.soundEnabled && this.playNotificationSound(),
-                       this.settings.notificationsEnabled && this.sendNotification()
-                   ]);
-                   
-                   if ('vibrate' in navigator) {
-                       navigator.vibrate([200, 100, 200]);
-                   }
-                   
-                   gsap.timeline()
-                       .to('.timer-container', {
-                           scale: 1.1,
-                           duration: 0.3,
-                           ease: 'power2.out'
-                       })
-                       .to('.timer-container', {
-                           scale: 1,
-                           duration: 0.5,
-                           ease: 'elastic.out(1, 0.3)'
-                       });
-                   
-                   const nextMode = this.getNextMode();
-                   const shouldAutoStart = 
-                       (nextMode === 'pomodoro' && this.settings.autoStartPomodoro) ||
-                       (nextMode !== 'pomodoro' && this.settings.autoStartBreak);
-                   
-                   if (shouldAutoStart) {
-                       setTimeout(() => {
-                           this.changeMode(nextMode);
-                           this.start();
-                       }, 1000);
-                   } else {
-                       this.changeMode(nextMode);
-                   }
-               },
-               
-               openSettings() {
-                   this.showSettings = true;
-                   // 确保通知权限状态是最新的
-                   if (this.settings.notificationsEnabled && Notification.permission !== 'granted') {
-                       this.settings.notificationsEnabled = false;
-                   }
-               },
-               
-               closeSettings() {
-                   this.showSettings = false;
-                   this.saveSettings();
-               },
-               
-               openStatsPanel() {
-                   this.showStatsPanel = true;
-               },
-               
-               closeStatsPanel() {
-                   this.showStatsPanel = false;
-               }
-           }));
+                    if (this.wakeLock) {
+                        this.wakeLock.release().then(() => {
+                            this.wakeLock = null;
+                        });
+                    }
+                },
+        
+                handleVisibilityChange() {
+                    if (document.hidden) {
+                        this.lastTime = performance.now();
+                    } else if (this.isRunning) {
+                        if (navigator.serviceWorker?.controller) {
+                            navigator.serviceWorker.controller.postMessage({
+                                type: 'SYNC_TIME',
+                                payload: {
+                                    timerId: this.timerId,
+                                    timeLeft: this.timeLeft
+                                }
+                            });
+                        }
+                    }
+                },
+        
+                handleBeforeUnload() {
+                    if (this.isRunning && navigator.serviceWorker?.controller) {
+                        navigator.serviceWorker.controller.postMessage({
+                            type: 'SYNC_TIME',
+                            payload: {
+                                timerId: this.timerId,
+                                timeLeft: this.timeLeft
+                            }
+                        });
+                    }
+                },
+        
+                // 统计相关
+                updateStats() {
+                    const today = new Date().toDateString();
+                    
+                    if (this.lastFocusDate !== today) {
+                        this.todaySessions = 1;
+                        
+                        const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        
+                        if (lastDate && lastDate.toDateString() === yesterday.toDateString()) {
+                            this.currentStreak++;
+                        } else if (!lastDate || lastDate.toDateString() !== today) {
+                            this.currentStreak = 1;
+                        }
+                    } else {
+                        this.todaySessions++;
+                    }
+                    
+                    this.lastFocusDate = today;
+                    this.totalFocusTime += this.times.pomodoro;
+                    
+                    this.saveSettings();
+                },
+        
+                // 继续主题相关
+                applyTheme(theme) {
+                    document.documentElement.style.setProperty('--primary', `var(--theme-${theme})`);
+                    const themeColor = getComputedStyle(document.documentElement)
+                        .getPropertyValue(`--theme-${theme}`).trim();
+                    const metaTheme = document.querySelector('meta[name="theme-color"]');
+                    if (metaTheme) {
+                        metaTheme.setAttribute('content', themeColor);
+                    }
+                },
+        
+                changeTheme(theme) {
+                    this.settings.theme = theme;
+                    this.applyTheme(theme);
+                    this.saveSettings();
+                    this.showToast('主题已更新', 'success', 'fa-palette');
+                },
+        
+                // 计时结束处理
+                async timeUp() {
+                    this.pause();
+                    
+                    if (this.currentMode === 'pomodoro') {
+                        this.completedSessions++;
+                        this.updateStats();
+                    }
+        
+                    // Service Worker 会处理通知和声音
+                    const nextMode = this.getNextMode();
+                    const shouldAutoStart = 
+                        (nextMode === 'pomodoro' && this.settings.autoStartPomodoro) ||
+                        (nextMode !== 'pomodoro' && this.settings.autoStartBreak);
+                    
+                    gsap.timeline()
+                        .to('.timer-container', {
+                            scale: 1.1,
+                            duration: 0.3,
+                            ease: 'power2.out'
+                        })
+                        .to('.timer-container', {
+                            scale: 1,
+                            duration: 0.5,
+                            ease: 'elastic.out(1, 0.3)'
+                        });
+                    
+                    if (shouldAutoStart) {
+                        setTimeout(() => {
+                            this.changeMode(nextMode);
+                            this.start();
+                        }, 1000);
+                    } else {
+                        this.changeMode(nextMode);
+                    }
+                },
+        
+                // 获取下一个模式
+                getNextMode() {
+                    if (this.currentMode === 'pomodoro') {
+                        return this.completedSessions % this.settings.longBreakInterval === 0 
+                            ? 'longBreak' 
+                            : 'shortBreak';
+                    }
+                    return 'pomodoro';
+                },
+        
+                // 检查和更新连续专注
+                checkAndUpdateStreak() {
+                    const today = new Date().toDateString();
+                    const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
+                    
+                    if (lastDate) {
+                        const daysDiff = Math.floor((new Date(today) - lastDate) / (1000 * 60 * 60 * 24));
+                        if (daysDiff > 1) {
+                            this.currentStreak = 0;
+                            this.saveSettings();
+                        }
+                    }
+                },
+        
+                // 更新时间设置
+                updateTime(mode, minutes) {
+                    const newTime = Math.max(1, Math.min(60, parseInt(minutes) || 1)) * 60;
+                    this.times[mode] = newTime;
+                    
+                    if (mode === this.currentMode) {
+                        this.timeLeft = newTime;
+                    }
+                    
+                    this.saveSettings();
+                },
+        
+                // 重置统计数据
+                resetStats() {
+                    if (confirm('确定要重置所有统计数据吗？')) {
+                        this.completedSessions = 0;
+                        this.todaySessions = 0;
+                        this.totalFocusTime = 0;
+                        this.currentStreak = 0;
+                        this.lastFocusDate = null;
+                        this.saveSettings();
+                        this.showToast('统计数据已重置', 'info', 'fa-refresh');
+                    }
+                },
+        
+                // 面板控制
+                openSettings() {
+                    this.showSettings = true;
+                    // 确保通知权限状态是最新的
+                    if (this.settings.notificationsEnabled && Notification.permission !== 'granted') {
+                        this.settings.notificationsEnabled = false;
+                    }
+                },
+                
+                closeSettings() {
+                    this.showSettings = false;
+                    this.saveSettings();
+                },
+                
+                openStatsPanel() {
+                    this.showStatsPanel = true;
+                },
+                
+                closeStatsPanel() {
+                    this.showStatsPanel = false;
+                },
+        
+                // 快捷键处理
+                handleKeyPress(e) {
+                    if (e.code === 'Space' && !this.showSettings && !this.showStatsPanel) {
+                        e.preventDefault();
+                        this.toggleTimer();
+                    }
+                    else if (e.code === 'Escape') {
+                        if (this.showSettings) this.closeSettings();
+                        if (this.showStatsPanel) this.closeStatsPanel();
+                    }
+                },
+        
+                // 页面可见性变化处理
+                handleVisibilityChange() {
+                    if (document.hidden) {
+                        this.lastTime = performance.now();
+                    } else if (this.isRunning) {
+                        if (navigator.serviceWorker?.controller) {
+                            navigator.serviceWorker.controller.postMessage({
+                                type: 'SYNC_TIME',
+                                payload: {
+                                    timerId: this.timerId,
+                                    timeLeft: this.timeLeft
+                                }
+                            });
+                        }
+                    }
+                },
+        
+                // 页面卸载前处理
+                handleBeforeUnload() {
+                    if (this.isRunning && navigator.serviceWorker?.controller) {
+                        navigator.serviceWorker.controller.postMessage({
+                            type: 'SYNC_TIME',
+                            payload: {
+                                timerId: this.timerId,
+                                timeLeft: this.timeLeft
+                            }
+                        });
+                    }
+                }
+            }));
         });
    </script>
 </body>
