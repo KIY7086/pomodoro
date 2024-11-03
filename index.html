@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#FF6B6B">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#4A90E2">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="manifest" href="/manifest.json">
     <title>专注时钟</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <style>
         :root {
-            /* 主题色变量 */
-            --primary: #FF6575;
-            --primary-dark: #FF4F61;
-            --primary-light: #FF8B97;
-            --primary-rgb: 255, 101, 117;
+            /* 主题色预设 */
+            --theme-first: #FC7A57;
+            --theme-second: #FFCB69;
+            --theme-third: #FFD29D;
+            --theme-fourth: #BBD686;
+            --theme-fifth: #FFADC6;
+            
+            /* 默认使用第五个主题 */
+            --primary: var(--theme-fifth);
+            --primary-dark: #E5CFCB;
+            --primary-light: #FFE9E3;
+            --primary-rgb: 247, 225, 215;
             
             /* 功能色 */
             --success: #10B981;
@@ -136,223 +140,7 @@
             overflow: hidden;
             margin-top: 4rem;
         }
-        
-        /* 按钮基础样式 */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: var(--radius-full);
-            font-size: 0.9375rem;
-            font-weight: 600;
-            color: var(--text);
-            background: var(--surface);
-            cursor: pointer;
-            transition: all var(--transition-normal) var(--ease-bounce);
-            box-shadow: var(--shadow-sm), 0 0 0 1px var(--border);
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            background: var(--primary);
-            color: white;
-            box-shadow: var(--shadow-lg), 0 0 0 1px var(--primary);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        /* 中央播放按钮 */
-        .center-play-button {
-            position: fixed;
-            bottom: calc(var(--nav-height) + var(--nav-bottom-space) + 1rem);
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4rem;
-            height: 4rem;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.5rem;
-            box-shadow: var(--shadow-lg);
-            transition: all var(--transition-normal) var(--ease-bounce);
-            z-index: 90;
-        }
-        
-        .center-play-button:hover {
-            transform: translateX(-50%) scale(1.1);
-            box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.3);
-        }
-        
-        .center-play-button:active {
-            transform: translateX(-50%) scale(0.95);
-        }
-        
-        /* 关闭按钮 */
-        .close-btn {
-            width: 2.5rem;
-            height: 2.5rem;
-            border: none;
-            border-radius: var(--radius);
-            background: var(--background);
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--transition-normal) var(--ease-spring);
-        }
-        
-        .close-btn:hover {
-            background: var(--surface-hover);
-            color: var(--text);
-            transform: rotate(90deg);
-        }
-        
-        .close-btn i {
-            font-size: 1.25rem;
-        }
-        
-        /* 重置按钮 */
-        .reset-btn {
-            width: 2.5rem;
-            height: 2.5rem;
-            border: none;
-            border-radius: var(--radius);
-            background: var(--background);
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--transition-normal) var(--ease-spring);
-        }
-        
-        .reset-btn:hover {
-            background: var(--surface-hover);
-            color: var(--text);
-            transform: scale(1.1);
-        }
-        
-        .reset-btn i {
-            font-size: 1.25rem;
-        }
-        
-        /* 统计面板按钮组 */
-        .stats-actions {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border);
-        }
-        
-        .stats-actions .btn {
-            min-width: 120px;
-        }
-        
-        /* 模态框标题栏按钮 */
-        .modal-header .close-btn {
-            width: 2rem;
-            height: 2rem;
-            border-radius: var(--radius);
-            background: var(--background);
-        }
-        
-        .modal-header .close-btn i {
-            font-size: 1rem;
-        }
-        
-        /* 底部导航按钮 */
-        .nav-button {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.5rem;
-            color: var(--text-secondary);
-            transition: all var(--transition-normal) var(--ease-spring);
-            cursor: pointer;
-        }
-        
-        .nav-button i {
-            font-size: 1.5rem;
-        }
-        
-        .nav-button span {
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .nav-button:hover {
-            color: var(--primary);
-        }
-        
-        .nav-button.active {
-            color: var(--primary);
-        }
-        
-        /* 切换按钮组 */
-        .toggle-group {
-            display: flex;
-            gap: 0.5rem;
-            padding: 0.25rem;
-            background: var(--background);
-            border-radius: var(--radius-full);
-        }
-        
-        .toggle-btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: var(--radius-full);
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            background: transparent;
-            cursor: pointer;
-            transition: all var(--transition-normal) var(--ease-spring);
-        }
-        
-        .toggle-btn.active {
-            color: white;
-            background: var(--primary);
-        }
-        
-        /* 按钮状态 */
-        .btn:disabled,
-        .btn[disabled] {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-        
-        /* 脉冲效果 */
-        @keyframes button-pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(var(--primary-rgb), 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
-            }
-        }
-        
-        .pulse {
-            animation: button-pulse 1.5s infinite;
-        }
-        
+
         /* 计时器容器 */
         .timer-container {
             position: relative;
@@ -419,7 +207,7 @@
             transform: translateZ(0);
             transition: color var(--transition-normal) var(--ease-spring);
         }
-        
+
         /* 导航栏 */
         .navigation {
             position: fixed;
@@ -439,61 +227,45 @@
             box-shadow: var(--shadow-lg);
             transform: translateZ(0);
             z-index: 100;
-            transition: background-color var(--transition-normal) var(--ease-spring),
-                        box-shadow var(--transition-normal) var(--ease-spring);
         }
-        
+
         .nav-item {
             position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             gap: 0.375rem;
-            padding: 0.75rem 0;
+            padding: 0.75rem;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
             color: var(--text-tertiary);
-            transition: color var(--transition-normal) var(--ease-spring);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-normal) var(--ease-spring);
             cursor: pointer;
         }
-        
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            inset: 0.375rem;
+
+        .nav-item:hover {
+            transform: translateY(-2px);
             background: var(--primary);
-            border-radius: var(--radius-lg);
-            opacity: 0;
-            transform: scale(0.8);
-            transition: transform var(--transition-normal) var(--ease-bounce),
-                        opacity var(--transition-normal) var(--ease-spring);
+            color: white;
+            box-shadow: var(--shadow-md);
         }
-        
+
         .nav-item.active {
-            color: var(--text);
+            background: var(--primary);
+            color: white;
         }
-        
-        .nav-item.active::before {
-            opacity: 0.1;
-            transform: scale(1);
-        }
-        
+
         .nav-item i {
-            position: relative;
             font-size: 1.25rem;
             transition: transform var(--transition-normal) var(--ease-bounce);
         }
-        
+
         .nav-item span {
-            position: relative;
             font-size: 0.75rem;
             font-weight: 500;
-            transition: transform var(--transition-normal) var(--ease-bounce);
         }
-        
-        .nav-item:hover i {
-            transform: scale(1.2);
-        }
-        
+
         .nav-center-button {
             position: absolute;
             top: -1.5rem;
@@ -511,23 +283,10 @@
             cursor: pointer;
             box-shadow: var(--shadow-lg);
             transition: all var(--transition-normal) var(--ease-bounce);
+            z-index: 100;
         }
         
-        .nav-center-button i {
-            font-size: 1.25rem;
-            transition: transform var(--transition-normal) var(--ease-bounce);
-        }
-        
-        .nav-center-button:hover {
-            transform: translateX(-50%) scale(1.1);
-            background: var(--primary-dark);
-        }
-        
-        .nav-center-button:active {
-            transform: translateX(-50%) scale(0.95);
-        }
-        
-        /* 模态框基础样式 */
+        /* 模态框样式 */
         .modal {
             position: fixed;
             inset: 0;
@@ -586,7 +345,6 @@
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--text);
-            transition: color var(--transition-normal) var(--ease-spring);
         }
         
         .modal-body {
@@ -599,31 +357,11 @@
             scrollbar-color: var(--text-tertiary) transparent;
         }
         
-        /* 自定义滚动条 */
-        .modal-body::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .modal-body::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        .modal-body::-webkit-scrollbar-thumb {
-            background: var(--text-tertiary);
-            border-radius: 3px;
-            transition: background var(--transition-normal) var(--ease-spring);
-        }
-        
-        .modal-body::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary);
-        }
-        
-        /* 设置组样式 */
+        /* 设置面板样式 */
         .settings-group {
             margin-bottom: 2rem;
             padding-bottom: 2rem;
             border-bottom: 1px solid var(--border);
-            transition: border-color var(--transition-normal) var(--ease-spring);
         }
         
         .settings-group:last-child {
@@ -640,7 +378,34 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            transition: color var(--transition-normal) var(--ease-spring);
+        }
+
+        /* 主题色选择器 */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .theme-button {
+            width: 100%;
+            aspect-ratio: 1;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all var(--transition-normal) var(--ease-spring);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .theme-button:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-md);
+        }
+
+        .theme-button.active {
+            outline: 2px solid var(--text);
+            outline-offset: 2px;
         }
         
         /* 时间输入组件 */
@@ -668,7 +433,6 @@
             font-size: 0.9375rem;
             font-weight: 500;
             color: var(--text);
-            transition: color var(--transition-normal) var(--ease-spring);
         }
         
         .time-input input {
@@ -699,196 +463,163 @@
         }
         
         /* 开关组件 */
-        .switch-group {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.875rem 1rem;
-            background: var(--background);
-            border-radius: var(--radius-lg);
-            margin-bottom: 0.75rem;
-            transition: all var(--transition-normal) var(--ease-spring);
-        }
-        
-        .switch-group:last-child {
-            margin-bottom: 0;
-        }
-        
-        .switch-group:hover {
-            background: var(--surface-hover);
-            transform: translateY(-1px);
-        }
-        
-        .switch-label {
-            font-size: 0.9375rem;
-            font-weight: 500;
-            color: var(--text);
-            transition: color var(--transition-normal) var(--ease-spring);
-        }
-        
-        .switch {
-            position: relative;
-            width: 2.75rem;
-            height: 1.5rem;
-            flex-shrink: 0;
-        }
-        
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-            position: absolute;
-        }
-        
-        .switch-slider {
-            position: absolute;
-            inset: 0;
-            background: var(--text-tertiary);
-            border-radius: var(--radius-full);
-            transition: all var(--transition-normal) var(--ease-spring);
-            cursor: pointer;
-        }
-        
-        .switch-slider:before {
-            content: "";
-            position: absolute;
-            height: 1.25rem;
-            width: 1.25rem;
-            left: 0.125rem;
-            bottom: 0.125rem;
-            background: white;
-            border-radius: 50%;
-            transition: transform var(--transition-normal) var(--ease-bounce);
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .switch input:checked + .switch-slider {
-            background: var(--primary);
-        }
-        
-        .switch input:checked + .switch-slider:before {
-            transform: translateX(1.25rem);
-        }
-        
-        .switch input:focus-visible + .switch-slider {
-            box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--primary);
-        }
-        
-        /* Toast 通知 */
-        .toast {
-            position: fixed;
-            bottom: calc(var(--nav-height) + var(--nav-bottom-space) + 1rem);
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--surface);
-            color: var(--text);
-            padding: 0.875rem 1.25rem;
-            border-radius: var(--radius-full);
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            z-index: 1000;
-            opacity: 0;
-            transition: all var(--transition-normal) var(--ease-bounce);
-        }
-        
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-        
-        .toast i {
-            font-size: 1.125rem;
-        }
-        
-        .toast.success {
-            background: var(--success);
-            color: white;
-        }
-        
-        .toast.error {
-            background: var(--error);
-            color: white;
-        }
-        
-        .toast.warning {
-            background: var(--warning);
-            color: white;
-        }
-        
-        .toast.info {
-            background: var(--info);
-            color: white;
-        }
-        
-        /* 统计面板特定样式 */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .stats-item {
-            background: var(--background);
-            padding: 1.25rem;
-            border-radius: var(--radius-lg);
-            text-align: center;
-            transition: all var(--transition-normal) var(--ease-spring);
-        }
-        
-        .stats-item:hover {
-            background: var(--surface-hover);
-            transform: translateY(-2px);
-        }
-        
-        .stats-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-            transition: color var(--transition-normal) var(--ease-spring);
-        }
-        
-        .stats-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            transition: color var(--transition-normal) var(--ease-spring);
-        }
-        
-        /* 会话计数器 */
-        .session-counter {
-            position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
-            padding: 0.625rem 1.25rem;
-            background: var(--surface-transparent);
-            backdrop-filter: blur(var(--card-blur));
-            -webkit-backdrop-filter: blur(var(--card-blur));
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9375rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            box-shadow: var(--shadow-md), 0 0 0 1px var(--border);
-            transition: all var(--transition-normal) var(--ease-spring);
-        }
-        
-        .session-counter i {
-            color: var(--primary);
-            font-size: 1.125rem;
-        }
-        
-        .session-counter strong {
-            color: var(--text);
-            font-weight: 600;
-        }
-        
-        /* 计时器标签 */
+       .switch-group {
+           display: flex;
+           align-items: center;
+           justify-content: space-between;
+           padding: 0.875rem 1rem;
+           background: var(--background);
+           border-radius: var(--radius-lg);
+           margin-bottom: 0.75rem;
+           transition: all var(--transition-normal) var(--ease-spring);
+       }
+       
+       .switch-group:last-child {
+           margin-bottom: 0;
+       }
+       
+       .switch-group:hover {
+           background: var(--surface-hover);
+           transform: translateY(-1px);
+       }
+       
+       .switch-label {
+           font-size: 0.9375rem;
+           font-weight: 500;
+           color: var(--text);
+       }
+       
+       .switch {
+           position: relative;
+           width: 2.75rem;
+           height: 1.5rem;
+           flex-shrink: 0;
+       }
+       
+       .switch input {
+           opacity: 0;
+           width: 0;
+           height: 0;
+           position: absolute;
+       }
+       
+       .switch-slider {
+           position: absolute;
+           inset: 0;
+           background: var(--text-tertiary);
+           border-radius: var(--radius-full);
+           transition: all var(--transition-normal) var(--ease-spring);
+           cursor: pointer;
+       }
+       
+       .switch-slider:before {
+           content: "";
+           position: absolute;
+           height: 1.25rem;
+           width: 1.25rem;
+           left: 0.125rem;
+           bottom: 0.125rem;
+           background: white;
+           border-radius: 50%;
+           transition: transform var(--transition-normal) var(--ease-bounce);
+           box-shadow: var(--shadow-sm);
+       }
+       
+       .switch input:checked + .switch-slider {
+           background: var(--primary);
+       }
+       
+       .switch input:checked + .switch-slider:before {
+           transform: translateX(1.25rem);
+       }
+       
+       .switch input:focus-visible + .switch-slider {
+           box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--primary);
+       }
+
+       /* 统计面板样式 */
+       .stats-grid {
+           display: grid;
+           grid-template-columns: repeat(2, 1fr);
+           gap: 1rem;
+           margin-bottom: 1.5rem;
+       }
+       
+       .stats-item {
+           background: var(--background);
+           padding: 1.25rem;
+           border-radius: var(--radius-lg);
+           text-align: center;
+           transition: all var(--transition-normal) var(--ease-spring);
+       }
+       
+       .stats-item:hover {
+           background: var(--surface-hover);
+           transform: translateY(-2px);
+       }
+       
+       .stats-value {
+           font-size: 2rem;
+           font-weight: 700;
+           color: var(--primary);
+           margin-bottom: 0.5rem;
+       }
+       
+       .stats-label {
+           font-size: 0.875rem;
+           color: var(--text-secondary);
+           font-weight: 500;
+       }
+
+       /* Toast 通知 */
+       .toast {
+           position: fixed;
+           bottom: calc(var(--nav-height) + var(--nav-bottom-space) + 1rem);
+           left: 50%;
+           transform: translateX(-50%) translateY(100px);
+           background: var(--surface);
+           color: var(--text);
+           padding: 0.875rem 1.25rem;
+           border-radius: var(--radius-full);
+           box-shadow: var(--shadow-lg);
+           display: flex;
+           align-items: center;
+           gap: 0.75rem;
+           z-index: 1000;
+           opacity: 0;
+           transition: all var(--transition-normal) var(--ease-bounce);
+       }
+       
+       .toast.show {
+           transform: translateX(-50%) translateY(0);
+           opacity: 1;
+       }
+       
+       .toast i {
+           font-size: 1.125rem;
+       }
+       
+       .toast.success {
+           background: var(--success);
+           color: white;
+       }
+       
+       .toast.error {
+           background: var(--error);
+           color: white;
+       }
+       
+       .toast.warning {
+           background: var(--warning);
+           color: white;
+       }
+       
+       .toast.info {
+           background: var(--info);
+           color: white;
+       }
+       
+       /* 定时器标签样式 */
         .timer-label {
             text-align: center;
             font-size: 1.25rem;
@@ -898,7 +629,74 @@
             transition: color var(--transition-normal) var(--ease-spring);
         }
         
-        /* 控制按钮组 */
+         /* 会话计数器样式 */
+        .session-counter {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--surface-transparent);
+            backdrop-filter: blur(var(--card-blur));
+            -webkit-backdrop-filter: blur(var(--card-blur));
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-md), 0 0 0 1px var(--border);
+            transition: all var(--transition-normal) var(--ease-spring);
+            z-index: 10;
+        }
+
+        .session-counter i {
+            color: var(--primary);
+            font-size: 1.125rem;
+        }
+
+        .session-counter strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+       /* 按钮基础样式 - 所有按钮的共同特征 */
+        .btn-base {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: var(--background);
+            border-radius: var(--radius-lg);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: all var(--transition-normal) var(--ease-bounce);
+            box-shadow: var(--shadow-sm), 0 0 0 1px var(--border);
+        }
+
+        .btn-base:hover {
+            transform: translateY(-2px);
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-md), 0 0 0 1px var(--primary);
+        }
+
+        .btn-base:active {
+            transform: translateY(0);
+        }
+
+        .btn-base:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* 控制按钮组样式 */
         .control-buttons {
             display: flex;
             justify-content: center;
@@ -906,83 +704,68 @@
             margin-top: 1rem;
             padding: 0 1.5rem;
         }
-        
+
         .control-btn {
             min-width: 120px;
             height: 48px;
             padding: 0 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            border: none;
-            border-radius: var(--radius-full);
-            background: var(--surface);
-            color: var(--text);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--transition-normal) var(--ease-bounce);
-            box-shadow: var(--shadow-md), 0 0 0 1px var(--border);
         }
-        
-        .control-btn:hover {
-            transform: translateY(-2px);
-            background: var(--primary);
-            color: white;
-            box-shadow: var(--shadow-lg), 0 0 0 1px var(--primary);
-        }
-        
-        .control-btn:active {
-            transform: translateY(0);
-        }
-        
-        .control-btn i {
-            font-size: 1.125rem;
-        }
-        
-        .control-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-        
+
         /* 开始按钮特殊样式 */
         .control-btn.start {
             background: var(--primary);
             color: white;
             box-shadow: var(--shadow-md), 0 0 0 1px var(--primary);
         }
-        
+
         .control-btn.start:hover {
             background: var(--primary-dark);
-            transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.3);
         }
-        
+
         /* 暂停状态 */
-        .control-btn.pause {
-            background: var(--surface);
-            color: var(--text);
-        }
-        
         .control-btn.pause:hover {
             background: var(--error);
-            color: white;
             box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
         }
-        
-        /* 重置按钮样式 */
-        .control-btn.reset {
-            background: var(--surface);
+
+        /* 统计面板按钮组 */
+        .stats-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* 关闭按钮样式 */
+        .close-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            padding: 0;
+            border-radius: var(--radius);
             color: var(--text-secondary);
+            background: var(--background);
         }
-        
-        .control-btn.reset:hover {
-            background: var(--text-secondary);
+
+        .close-btn:hover {
+            background: var(--error);
             color: white;
+            transform: rotate(90deg);
         }
-        
+
+        .close-btn i {
+            font-size: 1.25rem;
+        }
+
+        /* 模态框中的按钮样式统一 */
+        .control-btn,
+        .stats-actions .btn,
+        .close-btn {
+            composes: btn-base;
+        }
+
         /* 响应式调整 */
         @media (max-width: 480px) {
             .session-counter {
@@ -991,95 +774,72 @@
                 padding: 0.5rem 1rem;
                 font-size: 0.875rem;
             }
-        
+
             .timer-label {
                 font-size: 1.125rem;
                 margin: 1rem 0;
             }
-        
+
             .control-buttons {
                 padding: 0 1rem;
             }
-        
+
             .control-btn {
                 min-width: 100px;
                 height: 44px;
                 font-size: 0.9375rem;
             }
-        }
         
-        /* 键盘焦点样式 */
-        .control-btn:focus-visible {
-            outline: none;
-            box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--primary);
-        }
-        
-        /* 深色模式特殊调整 */
-        @media (prefers-color-scheme: dark) {
-            .session-counter {
-                background: rgba(30, 41, 59, 0.8);
-            }
-        
-            .control-btn {
-                background: var(--surface);
-            }
-        }
-        
-        /* 动画类 */
-        @keyframes pulse {
-            0%, 100% { 
-                transform: scale(1); 
-                opacity: 1;
-            }
-            50% { 
-                transform: scale(1.05); 
-                opacity: 0.8;
-            }
-        }
-        
-        .pulse-animation {
-            animation: pulse 2s var(--ease-spring) infinite;
-        }
-        
-        /* 响应式调整 */
-        @media (max-width: 480px) {
-            .modal-content {
-                max-height: 90vh;
-            }
-        
-            .time-input,
-            .switch-group {
-                padding: 0.75rem;
-            }
-        
-            .stats-item {
-                padding: 1rem;
-            }
-        
-            .stats-value {
-                font-size: 1.75rem;
-            }
-        }
-        
-        /* 深色模式特定调整 */
-        @media (prefers-color-scheme: dark) {
-            .modal {
-                background: rgba(0, 0, 0, 0.4);
-            }
-            
-            .time-input input {
-                background: var(--surface);
-            }
-            
-            .switch-slider:before {
-                background: var(--surface);
-            }
-        }
-    </style>
+           .modal-content {
+               max-height: 90vh;
+           }
+           
+           .time-input,
+           .switch-group {
+               padding: 0.75rem;
+           }
+           
+           .stats-item {
+               padding: 1rem;
+           }
+           
+           .stats-value {
+               font-size: 1.75rem;
+           }
+
+           .nav-item {
+               padding: 0.625rem;
+           }
+
+           .nav-item i {
+               font-size: 1.125rem;
+           }
+
+           .nav-item span {
+               font-size: 0.6875rem;
+           }
+       }
+
+       /* 动画类 */
+       @keyframes pulse {
+           0%, 100% { 
+               transform: scale(1); 
+               opacity: 1;
+           }
+           50% { 
+               transform: scale(1.05); 
+               opacity: 0.8;
+           }
+       }
+       
+       .pulse-animation {
+           animation: pulse 2s var(--ease-spring) infinite;
+       }
+   </style>
 </head>
-<body x-data="pomodoroTimer" :class="'theme-' + currentMode">
+<body x-data="pomodoroTimer">
     <div class="app-container">
-        <div class="session-counter" @click="resetSessions">
+        <div class="session-counter">
             <i class="fas fa-trophy"></i>
             <span>专注次数: <strong x-text="completedSessions"></strong></span>
         </div>
@@ -1109,15 +869,16 @@
 
             <div class="timer-label" x-text="timerLabel"></div>
 
+            <!-- 控制按钮组 -->
             <div class="control-buttons">
-                <button class="control-btn" 
+                <button class="control-btn btn-base" 
                         :class="isRunning ? 'pause' : 'start'"
                         @click="toggleTimer">
                     <i :class="isRunning ? 'fas fa-pause' : 'fas fa-play'"></i>
                     <span x-text="isRunning ? '暂停' : '开始'"></span>
                 </button>
                 
-                <button class="control-btn reset" 
+                <button class="control-btn btn-base reset" 
                         @click="reset"
                         :disabled="!canReset">
                     <i class="fas fa-rotate"></i>
@@ -1159,627 +920,658 @@
             <div class="modal-content" @click.stop>
                 <div class="modal-header">
                     <h2>设置</h2>
-                    <button class="btn-icon close-btn" @click="closeSettings">
+                    <button class="btn-base close-btn" @click="closeSettings">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="settings-group">
-                        <h3>时间设置（分钟）</h3>
-                        <div class="time-input">
-                            <label>专注时长</label>
-                            <input type="number" 
-                                   :value="Math.floor(times.pomodoro / 60)"
-                                   @input="updateTime('pomodoro', $event.target.value)"
-                                   min="1"
-                                   max="60">
-                        </div>
-                        <div class="time-input">
-                            <label>短休息时长</label>
-                            <input type="number" 
-                                   :value="Math.floor(times.shortBreak / 60)"
-                                   @input="updateTime('shortBreak', $event.target.value)"
-                                   min="1"
-                                   max="60">
-                        </div>
-                        <div class="time-input">
-                            <label>长休息时长</label>
-                            <input type="number" 
-                                   :value="Math.floor(times.longBreak / 60)"
-                                   @input="updateTime('longBreak', $event.target.value)"
-                                   min="1"
-                                   max="60">
+                        <h3>主题色</h3>
+                        <div class="theme-grid">
+                            <button class="theme-button"
+                                    :class="{ active: settings.theme === 'first' }"
+                                    @click="changeTheme('first')"
+                                    style="background: var(--theme-first)">
+                            </button>
+                            <button class="theme-button"
+                                    :class="{ active: settings.theme === 'second' }"
+                                    @click="changeTheme('second')"
+                                    style="background: var(--theme-second)">
+                            </button>
+                            <button class="theme-button"
+                                    :class="{ active: settings.theme === 'third' }"
+                                    @click="changeTheme('third')"
+                                    style="background: var(--theme-third)">
+                            </button>
+                            <button class="theme-button"
+                                    :class="{ active: settings.theme === 'fourth' }"
+                                    @click="changeTheme('fourth')"
+                                    style="background: var(--theme-fourth)">
+                            </button>
+                            <button class="theme-button"
+                                    :class="{ active: settings.theme === 'fifth' }"
+                                    @click="changeTheme('fifth')"
+                                    style="background: var(--theme-fifth)">
+                            </button>
                         </div>
                     </div>
-        
                     <div class="settings-group">
-                        <h3>通知设置</h3>
-                        <div class="switch-group">
-                            <label class="switch-label">声音提醒</label>
-                            <label class="switch">
-                                <input type="checkbox" x-model="settings.soundEnabled">
-                                <span class="switch-slider"></span>
-                            </label>
-                        </div>
-                        <div class="switch-group">
-                            <label class="switch-label">桌面通知</label>
-                            <label class="switch">
-                                <input type="checkbox" 
-                                       x-model="settings.notificationsEnabled"
-                                       @change="requestNotificationPermission">
-                                <span class="switch-slider"></span>
-                            </label>
-                        </div>
-                        <div class="switch-group">
-                            <label class="switch-label">自动开始休息</label>
-                            <label class="switch">
-                                <input type="checkbox" x-model="settings.autoStartBreak">
-                                <span class="switch-slider"></span>
-                            </label>
-                        </div>
-                        <div class="switch-group">
-                            <label class="switch-label">自动开始专注</label>
-                            <label class="switch">
-                                <input type="checkbox" x-model="settings.autoStartPomodoro">
-                                <span class="switch-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-        
-                    <div class="settings-group">
-                        <h3>其他设置</h3>
-                        <div class="time-input">
-                            <label>长休息间隔（次数）</label>
-                            <input type="number" 
-                                   :value="settings.longBreakInterval"
-                                   @input="settings.longBreakInterval = Math.max(1, parseInt($event.target.value) || 4)"
-                                   min="1"
-                                   max="10">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 统计面板 -->
-        <div class="modal" :class="{ 'active': showStatsPanel }" @click="closeStatsPanel">
-            <div class="modal-content" @click.stop>
-                <div class="modal-header">
-                    <h2>专注统计</h2>
-                    <button class="btn-icon close-btn" @click="closeStatsPanel">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="stats-grid">
-                        <div class="stats-item">
-                            <div class="stats-value" x-text="completedSessions"></div>
-                            <div class="stats-label">总专注次数</div>
-                        </div>
-                        <div class="stats-item">
-                            <div class="stats-value" x-text="todaySessions"></div>
-                            <div class="stats-label">今日专注</div>
-                        </div>
-                        <div class="stats-item">
-                            <div class="stats-value" x-text="Math.floor(totalFocusTime / 60)"></div>
-                            <div class="stats-label">总专注时长(分钟)</div>
-                        </div>
-                        <div class="stats-item">
-                            <div class="stats-value" x-text="currentStreak"></div>
-                            <div class="stats-label">连续专注天数</div>
-                        </div>
-                    </div>
-                    <div class="stats-actions">
-                        <button class="btn" @click="resetStats">
-                            <i class="fas fa-refresh"></i>
-                            重置统计
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Toast 通知 -->
-        <div class="toast" 
-             :class="{ 'show': showToast, [toastType]: true }"
-             x-show="showToast"
-             @click="hideToast">
-            <i :class="toastIcon"></i>
-            <span x-text="toastMessage"></span>
-        </div>
-    </div>
-
-    <script>
+                       <h3>时间设置（分钟）</h3>
+                       <div class="time-input">
+                           <label>专注时长</label>
+                           <input type="number" 
+                                  :value="Math.floor(times.pomodoro / 60)"
+                                  @input="updateTime('pomodoro', $event.target.value)"
+                                  min="1"
+                                  max="60">
+                       </div>
+                       <div class="time-input">
+                           <label>短休息时长</label>
+                           <input type="number" 
+                                  :value="Math.floor(times.shortBreak / 60)"
+                                  @input="updateTime('shortBreak', $event.target.value)"
+                                  min="1"
+                                  max="60">
+                       </div>
+                       <div class="time-input">
+                           <label>长休息时长</label>
+                           <input type="number" 
+                                  :value="Math.floor(times.longBreak / 60)"
+                                  @input="updateTime('longBreak', $event.target.value)"
+                                  min="1"
+                                  max="60">
+                       </div>
+                   </div>
+       
+                   <div class="settings-group">
+                       <h3>通知设置</h3>
+                       <div class="switch-group">
+                           <label class="switch-label">声音提醒</label>
+                           <label class="switch">
+                               <input type="checkbox" x-model="settings.soundEnabled">
+                               <span class="switch-slider"></span>
+                           </label>
+                       </div>
+                       <div class="switch-group">
+                           <label class="switch-label">桌面通知</label>
+                           <label class="switch">
+                               <input type="checkbox" 
+                                      x-model="settings.notificationsEnabled"
+                                      @change="requestNotificationPermission">
+                               <span class="switch-slider"></span>
+                           </label>
+                       </div>
+                       <div class="switch-group">
+                           <label class="switch-label">自动开始休息</label>
+                           <label class="switch">
+                               <input type="checkbox" x-model="settings.autoStartBreak">
+                               <span class="switch-slider"></span>
+                           </label>
+                       </div>
+                       <div class="switch-group">
+                           <label class="switch-label">自动开始专注</label>
+                           <label class="switch">
+                               <input type="checkbox" x-model="settings.autoStartPomodoro">
+                               <span class="switch-slider"></span>
+                           </label>
+                       </div>
+                   </div>
+       
+                   <div class="settings-group">
+                       <h3>其他设置</h3>
+                       <div class="time-input">
+                           <label>长休息间隔（次数）</label>
+                           <input type="number" 
+                                  :value="settings.longBreakInterval"
+                                  @input="settings.longBreakInterval = Math.max(1, parseInt($event.target.value) || 4)"
+                                  min="1"
+                                  max="10">
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+       
+       <!-- 统计面板 -->
+       <div class="modal" :class="{ 'active': showStatsPanel }" @click="closeStatsPanel">
+           <div class="modal-content" @click.stop>
+               <div class="modal-header">
+                   <h2>专注统计</h2>
+                   <button class="btn-base close-btn" @click="closeStatsPanel">
+                       <i class="fas fa-times"></i>
+                   </button>
+               </div>
+               <div class="modal-body">
+                   <div class="stats-grid">
+                       <div class="stats-item">
+                           <div class="stats-value" x-text="completedSessions"></div>
+                           <div class="stats-label">总专注次数</div>
+                       </div>
+                       <div class="stats-item">
+                           <div class="stats-value" x-text="todaySessions"></div>
+                           <div class="stats-label">今日专注</div>
+                       </div>
+                       <div class="stats-item">
+                           <div class="stats-value" x-text="Math.floor(totalFocusTime / 60)"></div>
+                           <div class="stats-label">总专注时长(分钟)</div>
+                       </div>
+                       <div class="stats-item">
+                           <div class="stats-value" x-text="currentStreak"></div>
+                           <div class="stats-label">连续专注天数</div>
+                       </div>
+                   </div>
+                   <div class="stats-actions">
+                       <button class="btn btn-base" @click="resetStats">
+                           <i class="fas fa-refresh"></i>
+                           重置统计
+                       </button>
+                   </div>
+               </div>
+           </div>
+       </div>
+       
+       <!-- Toast 通知 -->
+       <div class="toast" 
+            :class="{ 'show': showToast, [toastType]: true }"
+            x-show="showToast"
+            @click="hideToast">
+           <i :class="toastIcon"></i>
+           <span x-text="toastMessage"></span>
+       </div>
+   </div>
+</body>
+<script>
         document.addEventListener('alpine:init', () => {
-                Alpine.data('pomodoroTimer', () => ({
-                    // 基础数据
-                    size: 280,
-                    times: {
-                        pomodoro: 25 * 60,
-                        shortBreak: 5 * 60,
-                        longBreak: 15 * 60
-                    },
-                    modeLabels: {
-                        pomodoro: '专注',
-                        shortBreak: '短休息',
-                        longBreak: '长休息'
-                    },
-                    currentMode: 'pomodoro',
-                    timeLeft: 25 * 60,
-                    isRunning: false,
-                    lastTime: null,
-                    circumference: 2 * Math.PI * 130,
-                    wakeLock: null,
-            
-                    // 状态和面板控制
-                    showSettings: false,
-                    showStatsPanel: false,
-                    showToast: false,
-            
-                    // 统计数据
-                    completedSessions: 0,
-                    todaySessions: 0,
-                    totalFocusTime: 0,
-                    currentStreak: 0,
-                    lastFocusDate: null,
-            
-                    // 设置选项
-                    settings: {
-                        soundEnabled: true,
-                        notificationsEnabled: false,
-                        autoStartNext: true,
-                        autoStartBreak: true,
-                        autoStartPomodoro: false,
-                        longBreakInterval: 4
-                    },
-            
-                    // 通知相关
-                    toastMessage: '',
-                    toastType: 'success',
-                    toastIcon: 'fas fa-check',
-            
-                    // 初始化
-                    init() {
-                        this.loadSettings();
-                        this.setupCircle();
-                        this.handleResize();
-                        this.checkAndUpdateStreak();
-                        
-                        // 事件监听
-                        window.addEventListener('resize', () => this.handleResize());
-                        document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
-                        document.addEventListener('keydown', (e) => this.handleKeyPress(e));
-            
-                        // 请求通知权限
-                        if (this.settings.notificationsEnabled) {
-                            this.requestNotificationPermission();
-                        }
-            
-                        // 初始化主题色
-                        this.updateThemeColor();
-                    },
+            Alpine.data('pomodoroTimer', () => ({
+                // 基础数据
+                size: 280,
+                times: {
+                    pomodoro: 25 * 60,
+                    shortBreak: 5 * 60,
+                    longBreak: 15 * 60
+                },
+                modeLabels: {
+                    pomodoro: '专注',
+                    shortBreak: '短休息',
+                    longBreak: '长休息'
+                },
+                currentMode: 'pomodoro',
+                timeLeft: 25 * 60,
+                isRunning: false,
+                lastTime: null,
+                circumference: 2 * Math.PI * 130,
+                wakeLock: null,
+                
+                // 状态和面板控制
+                showSettings: false,
+                showStatsPanel: false,
+                showToast: false,
+                
+                // 统计数据
+                completedSessions: 0,
+                todaySessions: 0,
+                totalFocusTime: 0,
+                currentStreak: 0,
+                lastFocusDate: null,
+                
+                // 设置选项
+                settings: {
+                    theme: 'fifth',
+                    soundEnabled: true,
+                    notificationsEnabled: false,
+                    autoStartBreak: true,
+                    autoStartPomodoro: false,
+                    longBreakInterval: 4
+                },
+                
+                // 通知相关
+                toastMessage: '',
+                toastType: 'success',
+                toastIcon: 'fas fa-check',
+                
+                // 初始化
+                init() {
+                    this.loadSettings();
+                    this.setupCircle();
+                    this.handleResize();
+                    this.checkAndUpdateStreak();
+                    this.applyTheme(this.settings.theme);
                     
-                    // 长短休息切换
-                    toggleBreakMode() {
-                        // 如果当前不是休息模式，先切换到短休息
-                        if (this.currentMode === 'pomodoro') {
-                            this.changeMode('shortBreak');
-                            return;
-                        }
-                        
-                        // 在短休息和长休息之间切换
-                        const nextMode = this.currentMode === 'shortBreak' ? 'longBreak' : 'shortBreak';
-                        this.changeMode(nextMode);
-                    },
-            
-                    // 计时器核心逻辑
-                    setupCircle() {
-                        const circle = document.querySelector('.progress-ring__circle');
-                        if (circle) {
-                            circle.style.strokeDasharray = `${this.circumference} ${this.circumference}`;
-                        }
-                    },
-            
-                    handleResize() {
-                        const vw = Math.min(window.innerWidth * 0.8, 280);
-                        this.size = Math.floor(vw);
-                    },
-            
-                    get progressStyle() {
-                        const progress = this.timeLeft / this.times[this.currentMode];
-                        const offset = this.circumference * (1 - progress);
-                        return {
-                            strokeDasharray: `${this.circumference} ${this.circumference}`,
-                            strokeDashoffset: offset
-                        };
-                    },
-            
-                    get formatTime() {
-                        const minutes = Math.floor(this.timeLeft / 60);
-                        const seconds = Math.floor(this.timeLeft % 60);
-                        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                    },
-            
-                    get timerLabel() {
-                        return this.modeLabels[this.currentMode];
-                    },
-            
-                    get canReset() {
-                        return this.timeLeft !== this.times[this.currentMode];
-                    },
-            
-                    // 计时器控制
-                    toggleTimer() {
-                        if (this.isRunning) {
-                            this.pause();
-                        } else {
-                            this.start();
-                        }
-                    },
-            
-                    start() {
-                        if (!this.isRunning) {
-                            this.isRunning = true;
-                            this.lastTime = performance.now();
-                            this.tick();
-                            this.preventSleep();
-                            
-                            if ('vibrate' in navigator) {
-                                navigator.vibrate(50);
-                            }
-                        }
-                    },
-            
-                    pause() {
-                        this.isRunning = false;
-                        this.allowSleep();
-                        
-                        if ('vibrate' in navigator) {
-                            navigator.vibrate([50, 50, 50]);
-                        }
-                    },
-            
-                    tick() {
-                        if (!this.isRunning) return;
-            
-                        const now = performance.now();
-                        const deltaTime = Math.floor((now - this.lastTime) / 1000);
-                        
-                        if (deltaTime >= 1) {
-                            this.timeLeft = Math.max(0, this.timeLeft - deltaTime);
-                            this.lastTime = now;
-            
-                            if (this.timeLeft === 0) {
-                                this.timeUp();
-                                return;
-                            }
-                        }
-            
-                        requestAnimationFrame(() => this.tick());
-                    },
-            
-                    reset() {
-                        this.pause();
-                        this.timeLeft = this.times[this.currentMode];
-                        this.showToast('计时器已重置', 'info', 'fa-rotate');
-                    },
-            
-                    // 模式切换
-                    changeMode(mode) {
-                        if (mode === this.currentMode) return;
-            
-                        this.currentMode = mode;
-                        this.timeLeft = this.times[mode];
-                        this.pause();
-                        this.updateThemeColor();
-            
-                        gsap.timeline()
-                            .to('.timer-container', {
-                                scale: 0.95,
-                                duration: 0.2,
-                                ease: 'power2.inOut'
-                            })
-                            .to('.timer-container', {
-                                scale: 1,
-                                duration: 0.4,
-                                ease: 'back.out(1.7)'
-                            });
-            
-                        if ('vibrate' in navigator) {
-                            navigator.vibrate(50);
-                        }
-                    },
-            
-                    updateThemeColor() {
-                        const themeColor = getComputedStyle(document.documentElement)
-                            .getPropertyValue('--primary').trim();
-                        document.querySelector('meta[name="theme-color"]')
-                            .setAttribute('content', themeColor);
-                    },
-            
-                    // 统计相关
-                    checkAndUpdateStreak() {
-                        const today = new Date().toDateString();
-                        const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
-                        
-                        if (lastDate) {
-                            const daysDiff = Math.floor((new Date(today) - lastDate) / (1000 * 60 * 60 * 24));
-                            if (daysDiff > 1) {
-                                this.currentStreak = 0;
-                                this.saveSettings();
-                            }
-                        }
-                    },
-            
-                    updateStats() {
-                        const today = new Date().toDateString();
-                        
-                        if (this.lastFocusDate !== today) {
-                            this.todaySessions = 1;
-                            
-                            const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
-                            const yesterday = new Date();
-                            yesterday.setDate(yesterday.getDate() - 1);
-                            
-                            if (lastDate && lastDate.toDateString() === yesterday.toDateString()) {
-                                this.currentStreak++;
-                            } else if (!lastDate || lastDate.toDateString() !== today) {
-                                this.currentStreak = 1;
-                            }
-                        } else {
-                            this.todaySessions++;
-                        }
-                        
-                        this.lastFocusDate = today;
-                        this.totalFocusTime += this.times.pomodoro;
-                        
-                        this.saveSettings();
-                    },
-            
-                    getNextMode() {
-                        if (this.currentMode === 'pomodoro') {
-                            return this.completedSessions % this.settings.longBreakInterval === 0 
-                                ? 'longBreak' 
-                                : 'shortBreak';
-                        }
-                        return 'pomodoro';
-                    },
-            
-                    resetStats() {
-                        if (confirm('确定要重置所有统计数据吗？')) {
-                            this.completedSessions = 0;
-                            this.todaySessions = 0;
-                            this.totalFocusTime = 0;
-                            this.currentStreak = 0;
-                            this.lastFocusDate = null;
-                            this.saveSettings();
-                            this.showToast('统计数据已重置', 'info', 'fa-refresh');
-                        }
-                    },
-            
-                    // 计时结束处理
-                    timeUp() {
-                        this.pause();
-                        
-                        if (this.currentMode === 'pomodoro') {
-                            this.completedSessions++;
-                            this.updateStats();
-                        }
-            
-                        if (this.settings.soundEnabled) {
-                            this.playNotificationSound();
-                        }
-            
-                        this.sendNotification();
-            
-                        gsap.timeline()
-                            .to('.timer-container', {
-                                scale: 1.1,
-                                duration: 0.3,
-                                ease: 'power2.out'
-                            })
-                            .to('.timer-container', {
-                                scale: 1,
-                                duration: 0.5,
-                                ease: 'elastic.out(1, 0.3)'
-                            });
-            
-                        const nextMode = this.getNextMode();
-                        const shouldAutoStart = 
-                            (nextMode === 'pomodoro' && this.settings.autoStartPomodoro) ||
-                            (nextMode !== 'pomodoro' && this.settings.autoStartBreak);
-            
-                        if (shouldAutoStart) {
-                            setTimeout(() => {
-                                this.changeMode(nextMode);
-                                this.start();
-                            }, 1000);
-                        } else {
-                            this.changeMode(nextMode);
-                        }
-                    },
-            
-                    // 通知相关
-                    async playNotificationSound() {
-                        try {
-                            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgA');
-                            audio.volume = 0.5;
-                            await audio.play();
-                        } catch (error) {
-                            console.warn('Failed to play notification sound:', error);
-                        }
-                    },
-            
-                    async sendNotification() {
-                        if (!this.settings.notificationsEnabled || 
-                            Notification.permission !== 'granted') return;
-            
-                    try {
-                        const nextMode = this.getNextMode();
-                        const notification = new Notification(
-                            `${this.modeLabels[this.currentMode]}时间到！`, {
-                            body: `准备开始${this.modeLabels[nextMode]}`,
-                            icon: '/icon-192.png',
-                            badge: '/badge-96.png',
-                            vibrate: [200, 100, 200],
-                            tag: 'pomodoro-notification',
-                            renotify: true
-                        });
-        
-                        notification.onclick = () => {
-                            window.focus();
-                            notification.close();
-                        };
-                    } catch (error) {
-                        console.error('Error sending notification:', error);
+                    window.addEventListener('resize', () => this.handleResize());
+                    document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
+                    document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+                    
+                    if (this.settings.notificationsEnabled) {
+                        this.requestNotificationPermission();
                     }
                 },
-        
-                async requestNotificationPermission() {
-                    if (!('Notification' in window)) {
-                        this.settings.notificationsEnabled = false;
-                        this.showToast('你的浏览器不支持通知功能', 'error', 'fa-exclamation-circle');
-                        return;
-                    }
-        
-                    try {
-                        const permission = await Notification.requestPermission();
-                        if (permission !== 'granted') {
-                            this.settings.notificationsEnabled = false;
-                            this.showToast('通知权限被拒绝', 'warning', 'fa-exclamation-triangle');
-                        }
-                    } catch (error) {
-                        console.error('Error requesting notification permission:', error);
-                        this.settings.notificationsEnabled = false;
-                    }
-                    
+                
+                // 主题相关
+                applyTheme(theme) {
+                    document.documentElement.style.setProperty('--primary', `var(--theme-${theme})`);
+                    const themeColor = getComputedStyle(document.documentElement)
+                        .getPropertyValue(`--theme-${theme}`).trim();
+                    document.querySelector('meta[name="theme-color"]')
+                        .setAttribute('content', themeColor);
+                },
+
+                changeTheme(theme) {
+                    this.settings.theme = theme;
+                    this.applyTheme(theme);
                     this.saveSettings();
+                    this.showToast('主题已更新', 'success', 'fa-palette');
                 },
-        
-                // 设置相关
-                loadSettings() {
-                    try {
-                        const savedSettings = localStorage.getItem('pomodoroSettings');
-                        if (savedSettings) {
-                            const data = JSON.parse(savedSettings);
-                            this.settings = { ...this.settings, ...data.settings };
-                            this.times = { ...this.times, ...data.times };
-                            this.completedSessions = data.completedSessions || 0;
-                            this.todaySessions = data.todaySessions || 0;
-                            this.totalFocusTime = data.totalFocusTime || 0;
-                            this.currentStreak = data.currentStreak || 0;
-                            this.lastFocusDate = data.lastFocusDate;
-                        }
-                    } catch (error) {
-                        console.error('Error loading settings:', error);
-                        this.showToast('设置加载失败', 'error', 'fa-exclamation-circle');
+                
+                // 计时器核心逻辑
+                setupCircle() {
+                    const circle = document.querySelector('.progress-ring__circle');
+                    if (circle) {
+                        circle.style.strokeDasharray = `${this.circumference} ${this.circumference}`;
                     }
                 },
-        
-                saveSettings() {
-                    try {
-                        localStorage.setItem('pomodoroSettings', JSON.stringify({
-                            settings: this.settings,
-                            times: this.times,
-                            completedSessions: this.completedSessions,
-                            todaySessions: this.todaySessions,
-                            totalFocusTime: this.totalFocusTime,
-                            currentStreak: this.currentStreak,
-                            lastFocusDate: this.lastFocusDate
-                        }));
-                    } catch (error) {
-                        console.error('Error saving settings:', error);
-                        this.showToast('设置保存失败', 'error', 'fa-exclamation-circle');
-                    }
+                
+                handleResize() {
+                    const vw = Math.min(window.innerWidth * 0.8, 280);
+                    this.size = Math.floor(vw);
                 },
-        
-                updateTime(mode, minutes) {
-                    const newTime = Math.max(1, Math.min(60, parseInt(minutes) || 1)) * 60;
-                    this.times[mode] = newTime;
-                    
-                    if (mode === this.currentMode) {
-                        this.timeLeft = newTime;
-                    }
-                    
-                    this.saveSettings();
+                
+                get progressStyle() {
+                    const progress = this.timeLeft / this.times[this.currentMode];
+                    const offset = this.circumference * (1 - progress);
+                    return {
+                        strokeDasharray: `${this.circumference} ${this.circumference}`,
+                        strokeDashoffset: offset
+                    };
                 },
-        
-                // 系统相关
-                preventSleep() {
-                    if ('wakeLock' in navigator) {
-                        navigator.wakeLock.request('screen')
-                            .then(lock => this.wakeLock = lock)
-                            .catch(() => {});
-                    }
+                
+                get formatTime() {
+                    const minutes = Math.floor(this.timeLeft / 60);
+                    const seconds = Math.floor(this.timeLeft % 60);
+                    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
                 },
-        
-                allowSleep() {
-                    if (this.wakeLock) {
-                        this.wakeLock.release().then(() => {
-                            this.wakeLock = null;
-                        });
-                    }
+                
+                get timerLabel() {
+                    return this.modeLabels[this.currentMode];
                 },
-        
-                handleVisibilityChange() {
-                    if (document.hidden) {
-                        this.lastTime = performance.now();
-                    } else if (this.isRunning) {
-                        const now = performance.now();
-                        const elapsed = Math.floor((now - this.lastTime) / 1000);
-                        this.timeLeft = Math.max(0, this.timeLeft - elapsed);
-                        this.lastTime = now;
-        
-                        if (this.timeLeft === 0) {
-                            this.timeUp();
-                        }
-                    }
+                
+                get canReset() {
+                    return this.timeLeft !== this.times[this.currentMode];
                 },
-        
-                handleKeyPress(e) {
-                    if (e.code === 'Space' && !this.showSettings && !this.showStatsPanel) {
-                        e.preventDefault();
-                        this.toggleTimer();
-                    }
-                    else if (e.code === 'Escape') {
-                        if (this.showSettings) this.closeSettings();
-                        if (this.showStatsPanel) this.closeStatsPanel();
-                    }
-                },
-        
-                // UI 控制
-                showToast(message, type = 'success', icon = 'fa-check') {
-                    this.toastMessage = message;
-                    this.toastType = type;
-                    this.toastIcon = `fas ${icon}`;
-                    this.showToast = true;
-        
-                    setTimeout(() => {
-                        this.hideToast();
-                    }, 3000);
-                },
-        
-                hideToast() {
-                    this.showToast = false;
-                },
-        
-                openSettings() {
-                    this.showSettings = true;
-                },
-        
-                closeSettings() {
-                    this.showSettings = false;
-                },
-        
-                openStatsPanel() {
-                    this.showStatsPanel = true;
-                },
-        
-                closeStatsPanel() {
-                    this.showStatsPanel = false;
-                }
-            }));
-        });
-    </script>
+                
+                // 计时器控制功能
+               toggleTimer() {
+                   if (this.isRunning) {
+                       this.pause();
+                   } else {
+                       this.start();
+                   }
+               },
+               
+               start() {
+                   if (!this.isRunning) {
+                       this.isRunning = true;
+                       this.lastTime = performance.now();
+                       this.tick();
+                       this.preventSleep();
+                       
+                       if ('vibrate' in navigator) {
+                           navigator.vibrate(50);
+                       }
+                   }
+               },
+               
+               pause() {
+                   this.isRunning = false;
+                   this.allowSleep();
+                   
+                   if ('vibrate' in navigator) {
+                       navigator.vibrate([50, 50, 50]);
+                   }
+               },
+               
+               tick() {
+                   if (!this.isRunning) return;
+                   
+                   const now = performance.now();
+                   const deltaTime = Math.floor((now - this.lastTime) / 1000);
+                   
+                   if (deltaTime >= 1) {
+                       this.timeLeft = Math.max(0, this.timeLeft - deltaTime);
+                       this.lastTime = now;
+                       
+                       if (this.timeLeft === 0) {
+                           this.timeUp();
+                           return;
+                       }
+                   }
+                   
+                   requestAnimationFrame(() => this.tick());
+               },
+               
+               reset() {
+                   this.pause();
+                   this.timeLeft = this.times[this.currentMode];
+                   this.showToast('计时器已重置', 'info', 'fa-rotate');
+               },
+               
+               // 模式切换
+               changeMode(mode) {
+                   if (mode === this.currentMode) return;
+                   
+                   this.currentMode = mode;
+                   this.timeLeft = this.times[mode];
+                   this.pause();
+                   
+                   gsap.timeline()
+                       .to('.timer-container', {
+                           scale: 0.95,
+                           duration: 0.2,
+                           ease: 'power2.inOut'
+                       })
+                       .to('.timer-container', {
+                           scale: 1,
+                           duration: 0.4,
+                           ease: 'back.out(1.7)'
+                       });
+                   
+                   if ('vibrate' in navigator) {
+                       navigator.vibrate(50);
+                   }
+               },
+               
+               toggleBreakMode() {
+                   if (this.currentMode === 'pomodoro') {
+                       this.changeMode('shortBreak');
+                       return;
+                   }
+                   
+                   const nextMode = this.currentMode === 'shortBreak' ? 'longBreak' : 'shortBreak';
+                   this.changeMode(nextMode);
+               },
+               
+               // 设置相关
+               loadSettings() {
+                   try {
+                       const savedSettings = localStorage.getItem('pomodoroSettings');
+                       if (savedSettings) {
+                           const data = JSON.parse(savedSettings);
+                           this.settings = { ...this.settings, ...data.settings };
+                           this.times = { ...this.times, ...data.times };
+                           this.completedSessions = data.completedSessions || 0;
+                           this.todaySessions = data.todaySessions || 0;
+                           this.totalFocusTime = data.totalFocusTime || 0;
+                           this.currentStreak = data.currentStreak || 0;
+                           this.lastFocusDate = data.lastFocusDate;
+                       }
+                   } catch (error) {
+                       console.error('Error loading settings:', error);
+                       this.showToast('设置加载失败', 'error', 'fa-exclamation-circle');
+                   }
+               },
+               
+               saveSettings() {
+                   try {
+                       localStorage.setItem('pomodoroSettings', JSON.stringify({
+                           settings: this.settings,
+                           times: this.times,
+                           completedSessions: this.completedSessions,
+                           todaySessions: this.todaySessions,
+                           totalFocusTime: this.totalFocusTime,
+                           currentStreak: this.currentStreak,
+                           lastFocusDate: this.lastFocusDate
+                       }));
+                   } catch (error) {
+                       console.error('Error saving settings:', error);
+                       this.showToast('设置保存失败', 'error', 'fa-exclamation-circle');
+                   }
+               },
+               
+               updateTime(mode, minutes) {
+                   const newTime = Math.max(1, Math.min(60, parseInt(minutes) || 1)) * 60;
+                   this.times[mode] = newTime;
+                   
+                   if (mode === this.currentMode) {
+                       this.timeLeft = newTime;
+                   }
+                   
+                   this.saveSettings();
+               },
+               
+               // 统计相关
+               checkAndUpdateStreak() {
+                   const today = new Date().toDateString();
+                   const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
+                   
+                   if (lastDate) {
+                       const daysDiff = Math.floor((new Date(today) - lastDate) / (1000 * 60 * 60 * 24));
+                       if (daysDiff > 1) {
+                           this.currentStreak = 0;
+                           this.saveSettings();
+                       }
+                   }
+               },
+               
+               updateStats() {
+                   const today = new Date().toDateString();
+                   
+                   if (this.lastFocusDate !== today) {
+                       this.todaySessions = 1;
+                       
+                       const lastDate = this.lastFocusDate ? new Date(this.lastFocusDate) : null;
+                       const yesterday = new Date();
+                       yesterday.setDate(yesterday.getDate() - 1);
+                       
+                       if (lastDate && lastDate.toDateString() === yesterday.toDateString()) {
+                           this.currentStreak++;
+                       } else if (!lastDate || lastDate.toDateString() !== today) {
+                           this.currentStreak = 1;
+                       }
+                   } else {
+                       this.todaySessions++;
+                   }
+                   
+                   this.lastFocusDate = today;
+                   this.totalFocusTime += this.times.pomodoro;
+                   
+                   this.saveSettings();
+               },
+               
+               getNextMode() {
+                   if (this.currentMode === 'pomodoro') {
+                       return this.completedSessions % this.settings.longBreakInterval === 0 
+                           ? 'longBreak' 
+                           : 'shortBreak';
+                   }
+                   return 'pomodoro';
+               },
+               
+               resetStats() {
+                   if (confirm('确定要重置所有统计数据吗？')) {
+                       this.completedSessions = 0;
+                       this.todaySessions = 0;
+                       this.totalFocusTime = 0;
+                       this.currentStreak = 0;
+                       this.lastFocusDate = null;
+                       this.saveSettings();
+                       this.showToast('统计数据已重置', 'info', 'fa-refresh');
+                   }
+               },
+               
+               // 通知相关
+               async playNotificationSound() {
+                   try {
+                       const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgA');
+                       audio.volume = 0.5;
+                       await audio.play();
+                   } catch (error) {
+                       console.warn('Failed to play notification sound:', error);
+                   }
+               },
+               
+               async sendNotification() {
+                   if (!this.settings.notificationsEnabled || 
+                       Notification.permission !== 'granted') return;
+                   
+                   try {
+                       const nextMode = this.getNextMode();
+                       const notification = new Notification(
+                           `${this.modeLabels[this.currentMode]}时间到！`, {
+                           body: `准备开始${this.modeLabels[nextMode]}`,
+                           icon: '/icon-192.png',
+                           badge: '/badge-96.png',
+                           vibrate: [200, 100, 200],
+                           tag: 'pomodoro-notification',
+                           renotify: true
+                       });
+                       
+                       notification.onclick = () => {
+                           window.focus();
+                           notification.close();
+                       };
+                   } catch (error) {
+                       console.error('Error sending notification:', error);
+                   }
+               },
+               
+               async requestNotificationPermission() {
+                   if (!('Notification' in window)) {
+                       this.settings.notificationsEnabled = false;
+                       this.showToast('你的浏览器不支持通知功能', 'error', 'fa-exclamation-circle');
+                       return;
+                   }
+                   
+                   try {
+                       const permission = await Notification.requestPermission();
+                       if (permission !== 'granted') {
+                           this.settings.notificationsEnabled = false;
+                           this.showToast('通知权限被拒绝', 'warning', 'fa-exclamation-triangle');
+                       }
+                   } catch (error) {
+                       console.error('Error requesting notification permission:', error);
+                       this.settings.notificationsEnabled = false;
+                   }
+                   
+                   this.saveSettings();
+               },
+               
+               // 系统相关
+               preventSleep() {
+                   if ('wakeLock' in navigator) {
+                       navigator.wakeLock.request('screen')
+                           .then(lock => this.wakeLock = lock)
+                           .catch(() => {});
+                   }
+               },
+               
+               allowSleep() {
+                   if (this.wakeLock) {
+                       this.wakeLock.release().then(() => {
+                           this.wakeLock = null;
+                       });
+                   }
+               },
+               
+               handleVisibilityChange() {
+                   if (document.hidden) {
+                       this.lastTime = performance.now();
+                   } else if (this.isRunning) {
+                       const now = performance.now();
+                       const elapsed = Math.floor((now - this.lastTime) / 1000);
+                       this.timeLeft = Math.max(0, this.timeLeft - elapsed);
+                       this.lastTime = now;
+                       
+                       if (this.timeLeft === 0) {
+                           this.timeUp();
+                       }
+                   }
+               },
+               
+               handleKeyPress(e) {
+                   if (e.code === 'Space' && !this.showSettings && !this.showStatsPanel) {
+                       e.preventDefault();
+                       this.toggleTimer();
+                   }
+                   else if (e.code === 'Escape') {
+                       if (this.showSettings) this.closeSettings();
+                       if (this.showStatsPanel) this.closeStatsPanel();
+                   }
+               },
+               
+               // 计时结束处理
+               timeUp() {
+                   this.pause();
+                   
+                   if (this.currentMode === 'pomodoro') {
+                       this.completedSessions++;
+                       this.updateStats();
+                   }
+                   
+                   if (this.settings.soundEnabled) {
+                       this.playNotificationSound();
+                   }
+                   
+                   this.sendNotification();
+                   
+                   gsap.timeline()
+                       .to('.timer-container', {
+                           scale: 1.1,
+                           duration: 0.3,
+                           ease: 'power2.out'
+                       })
+                       .to('.timer-container', {
+                           scale: 1,
+                           duration: 0.5,
+                           ease: 'elastic.out(1, 0.3)'
+                       });
+                   
+                   const nextMode = this.getNextMode();
+                   const shouldAutoStart = 
+                       (nextMode === 'pomodoro' && this.settings.autoStartPomodoro) ||
+                       (nextMode !== 'pomodoro' && this.settings.autoStartBreak);
+                   
+                   if (shouldAutoStart) {
+                       setTimeout(() => {
+                           this.changeMode(nextMode);
+                           this.start();
+                       }, 1000);
+                   } else {
+                       this.changeMode(nextMode);
+                   }
+               },
+               
+               // UI 控制
+               showToast(message, type = 'success', icon = 'fa-check') {
+                   this.toastMessage = message;
+                   this.toastType = type;
+                   this.toastIcon = `fas ${icon}`;
+                   this.showToast = true;
+                   
+                   setTimeout(() => {
+                       this.hideToast();
+                   }, 3000);
+               },
+               
+               hideToast() {
+                   this.showToast = false;
+               },
+               
+               openSettings() {
+                   this.showSettings = true;
+               },
+               
+               closeSettings() {
+                   this.showSettings = false;
+               },
+               
+               openStatsPanel() {
+                   this.showStatsPanel = true;
+               },
+               
+               closeStatsPanel() {
+                   this.showStatsPanel = false;
+               }
+           }))
+       });
+   </script>
 </body>
 </html>
