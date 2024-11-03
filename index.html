@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-512x512.png">
     <style>
         :root {
             /* 主题色预设 */
@@ -585,7 +585,7 @@
            display: flex;
            align-items: center;
            gap: 0.75rem;
-           z-index: 1000;
+           z-index: 10000;
            opacity: 0;
            transition: all var(--transition-normal) var(--ease-bounce);
        }
@@ -993,7 +993,7 @@
                            </label>
                        </div>
                        <div class="switch-group">
-                           <label class="switch-label">桌面通知</label>
+                           <label class="switch-label">通知开关</label>
                            <label class="switch">
                                <input type="checkbox" 
                                       x-model="settings.notificationsEnabled"
@@ -1071,13 +1071,19 @@
        </div>
        
        <!-- Toast 通知 -->
-       <div class="toast" 
-            :class="{ 'show': showToast, [toastType]: true }"
-            x-show="showToast"
-            @click="hideToast">
-           <i :class="toastIcon"></i>
-           <span x-text="toastMessage"></span>
-       </div>
+        <div class="toast" 
+             :class="{ 'show': toast.show, [toast.type]: true }"
+             x-show="toast.show"
+             x-transition:enter="transition-transform duration-300"
+             x-transition:enter-start="translate-y-full opacity-0"
+             x-transition:enter-end="translate-y-0 opacity-100"
+             x-transition:leave="transition-transform duration-300"
+             x-transition:leave-start="translate-y-0 opacity-100"
+             x-transition:leave-end="translate-y-full opacity-0"
+             @click="hideToast">
+            <i :class="toast.icon"></i>
+            <span x-text="toast.message"></span>
+        </div>
     </div>
     <script>
         document.addEventListener('alpine:init', () => {
@@ -1101,6 +1107,7 @@
                 circumference: 2 * Math.PI * 130,
                 wakeLock: null,
                 notificationSound: null,
+                toastTimeout: null, // 用于管理Toast的定时器
                 
                 // 状态和面板控制 
                 showSettings: false,
@@ -1124,10 +1131,16 @@
                     longBreakInterval: 4
                 },
                 
-                // 通知相关
-                toastMessage: '',
-                toastType: 'success', 
-                toastIcon: 'fas fa-check',
+                // Toast配置
+                toast: {
+                    message: '',
+                    type: 'success',
+                    icon: 'fas fa-check',
+                    show: false,
+                    duration: 3000,
+                    queue: [], // Toast队列
+                    processing: false // 是否正在处理队列
+                },
                 
                 // 初始化
                 init() {
@@ -1139,15 +1152,70 @@
                     this.initializeNotificationSound();
                     this.timeLeft = this.times[this.currentMode];
                     
+                    // 检查通知权限状态
+                    if (this.settings.notificationsEnabled) {
+                        if (Notification.permission !== 'granted') {
+                            this.settings.notificationsEnabled = false;
+                            this.saveSettings();
+                        }
+                    }
+                    
                     window.addEventListener('resize', () => this.handleResize());
                     document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
                     document.addEventListener('keydown', (e) => this.handleKeyPress(e));
-                    
-                    if (this.settings.notificationsEnabled) {
-                        this.requestNotificationPermission();
-                    }
                 },
         
+                // Toast系统
+                showToast(message, type = 'success', icon = 'fa-check', duration = 3000) {
+                    // 添加到队列
+                    this.toast.queue.push({
+                        message,
+                        type,
+                        icon: `fas ${icon}`,
+                        duration
+                    });
+                    
+                    // 如果没有正在处理的Toast，开始处理队列
+                    if (!this.toast.processing) {
+                        this.processToastQueue();
+                    }
+                },
+                
+                async processToastQueue() {
+                    if (this.toast.queue.length === 0) {
+                        this.toast.processing = false;
+                        return;
+                    }
+                    
+                    this.toast.processing = true;
+                    const { message, type, icon, duration } = this.toast.queue.shift();
+                    
+                    // 如果已有Toast在显示，先隐藏它
+                    if (this.toast.show) {
+                        this.toast.show = false;
+                        await new Promise(resolve => setTimeout(resolve, 300)); // 等待淡出动画
+                    }
+                    
+                    // 显示新Toast
+                    this.toast.message = message;
+                    this.toast.type = type;
+                    this.toast.icon = icon;
+                    this.toast.show = true;
+                    
+                    // 设置自动隐藏
+                    setTimeout(async () => {
+                        this.toast.show = false;
+                        await new Promise(resolve => setTimeout(resolve, 300)); // 等待淡出动画
+                        
+                        // 处理队列中的下一个
+                        this.processToastQueue();
+                    }, duration);
+                },
+        
+                hideToast() {
+                    this.toast.show = false;
+                },
+                
                 // 初始化通知音效
                 initializeNotificationSound() {
                     try {
@@ -1487,11 +1555,26 @@
                     if (!('Notification' in window)) {
                         this.settings.notificationsEnabled = false;
                         this.showToast('你的浏览器不支持通知功能', 'error', 'fa-exclamation-circle');
+                        this.saveSettings();
                         return;
                     }
-                    
+        
                     try {
+                        if (Notification.permission === 'granted') {
+                            this.settings.notificationsEnabled = true;
+                            this.saveSettings();
+                            return;
+                        }
+        
+                        if (Notification.permission === 'denied') {
+                            this.settings.notificationsEnabled = false;
+                            this.showToast('通知权限已被浏览器禁用，请在浏览器设置中启用', 'warning', 'fa-exclamation-triangle', 5000);
+                            this.saveSettings();
+                            return;
+                        }
+        
                         const permission = await Notification.requestPermission();
+                        
                         if (permission === 'granted') {
                             this.settings.notificationsEnabled = true;
                             this.showToast('通知权限已开启', 'success', 'fa-bell');
@@ -1499,13 +1582,22 @@
                             this.settings.notificationsEnabled = false;
                             this.showToast('通知权限被拒绝', 'warning', 'fa-exclamation-triangle');
                         }
+                        
+                        this.saveSettings();
                     } catch (error) {
                         console.error('Error requesting notification permission:', error);
                         this.settings.notificationsEnabled = false;
                         this.showToast('请求通知权限失败', 'error', 'fa-exclamation-circle');
+                        this.saveSettings();
                     }
-                    
-                    this.saveSettings();
+                },
+        
+                async handleNotificationToggle() {
+                    if (this.settings.notificationsEnabled) {
+                        await this.requestNotificationPermission();
+                    } else {
+                        this.saveSettings();
+                    }
                 },
         
                 // 系统相关
@@ -1595,26 +1687,6 @@
                    } else {
                        this.changeMode(nextMode);
                    }
-               },
-               
-               // UI 控制
-               showToast(message, type = 'success', icon = 'fa-check') {
-                   if (this.toastTimeout) {
-                       clearTimeout(this.toastTimeout);
-                   }
-        
-                   this.toastMessage = message;
-                   this.toastType = type;
-                   this.toastIcon = `fas ${icon}`;
-                   this.showToast = true;
-                   
-                   this.toastTimeout = setTimeout(() => {
-                       this.hideToast();
-                   }, 3000);
-               },
-               
-               hideToast() {
-                   this.showToast = false;
                },
                
                openSettings() {

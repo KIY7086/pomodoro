@@ -1,6 +1,5 @@
 {
   "name": "专注时钟",
-  "short_name": "专注",
   "description": "一个简单的番茄工作法专注时钟应用",
   "start_url": "/",
   "display": "standalone",
