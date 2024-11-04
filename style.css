@@ -1052,6 +1052,8 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1rem;
+    width: 100%;
+    margin-top: 2rem;
 }
 
 .todo-header h2 {
@@ -1059,6 +1061,121 @@ body {
     font-weight: 600;
     color: var(--text);
     margin: 0;
+}
+
+/* 空状态容器样式 */
+.todo-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 3rem 2rem;
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    transition: all var(--transition-normal) var(--ease-spring);
+    transform: translateY(0);
+    opacity: 1;
+    width: 100%;
+}
+
+.todo-empty:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* 空状态文字样式 */
+.todo-empty p {
+    font-size: 1.25rem;
+    color: var(--text);
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.todo-empty p i {
+    font-size: 1.5rem;
+    color: var(--primary);
+    transition: transform var(--transition-normal) var(--ease-bounce);
+}
+
+.todo-empty .btn-base {
+    background: var(--primary);
+    color: white;
+    padding: 0.875rem 1.5rem;
+    font-weight: 600;
+    min-width: 180px;
+    box-shadow: var(--shadow-md);
+}
+
+.todo-empty .btn-base:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(var(--primary-rgb), 0.25);
+}
+
+.todo-empty .btn-base i {
+    font-size: 0.875rem;
+}
+
+@keyframes todo-empty-enter {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.todo-empty {
+    animation: todo-empty-enter var(--transition-normal) var(--ease-spring) forwards;
+}
+
+.todo-empty[x-cloak] {
+    display: none;
+}
+
+.todo-empty {
+    transition-property: opacity, transform;
+}
+
+.todo-empty.x-enter-active,
+.todo-empty.x-leave-active {
+    transition-duration: var(--transition-normal);
+    transition-timing-function: var(--ease-spring);
+}
+
+.todo-empty.x-enter-from,
+.todo-empty.x-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+    .todo-empty {
+        padding: 2rem 1.5rem;
+        gap: 1.5rem;
+    }
+
+    .todo-empty p {
+        font-size: 1.125rem;
+    }
+
+    .todo-empty p i {
+        font-size: 1.25rem;
+    }
+
+    .todo-empty .btn-base {
+        padding: 0.75rem 1.25rem;
+        min-width: 160px;
+        font-size: 0.875rem;
+    }
 }
 
 .add-todo-btn {
@@ -1150,6 +1267,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-left: auto;
 }
 
 .todo-delete:hover {
