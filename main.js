@@ -228,8 +228,17 @@ document.addEventListener('alpine:init', () => {
             changeMode(mode) {
                 if (mode === this.currentMode) return;
                 
+                // 如果计时器在运行，先暂停
+                if (this.isRunning) {
+                    this.pause();
+                }
+                
                 this.currentMode = mode;
-                this.reset();
+                this.timeLeft = this.times[mode];
+                this.timerWorker.postMessage({
+                    type: 'RESET',
+                    payload: { duration: this.times[mode] }
+                });
                 
                 // 添加动画效果
                 gsap.timeline()
@@ -243,7 +252,7 @@ document.addEventListener('alpine:init', () => {
                         duration: 0.4,
                         ease: 'back.out(1.7)'
                     });
-            },
+            }
     
             toggleBreakMode() {
                 if (this.currentMode === 'pomodoro') {
@@ -477,7 +486,7 @@ document.addEventListener('alpine:init', () => {
                 } else {
                     this.showNotification('休息结束！', '准备开始新的专注。');
                 }
-    
+            
                 // 添加完成动画
                 gsap.timeline()
                     .to('.timer-container', {
@@ -490,21 +499,31 @@ document.addEventListener('alpine:init', () => {
                         duration: 0.5,
                         ease: 'elastic.out(1, 0.3)'
                     });
-    
+            
                 const nextMode = this.getNextMode();
-                const shouldAutoStart = 
-                    (nextMode === 'pomodoro' && this.settings.autoStartPomodoro) ||
-                    (nextMode !== 'pomodoro' && this.settings.autoStartBreak);
-    
+                
+                // 添加自动切换的逻辑判断，防止循环
+                const shouldAutoStart = (
+                    // 从休息切换到专注时
+                    (this.currentMode !== 'pomodoro' && nextMode === 'pomodoro' && this.settings.autoStartPomodoro) ||
+                    // 从专注切换到休息时
+                    (this.currentMode === 'pomodoro' && nextMode !== 'pomodoro' && this.settings.autoStartBreak)
+                );
+            
+                // 首先切换模式和重置计时器
+                this.currentMode = nextMode;
+                this.timeLeft = this.times[nextMode];
+                this.timerWorker.postMessage({
+                    type: 'RESET',
+                    payload: { duration: this.times[nextMode] }
+                });
+            
                 if (shouldAutoStart) {
                     setTimeout(() => {
-                        this.changeMode(nextMode);
                         this.start();
                     }, 1000);
-                } else {
-                    this.changeMode(nextMode);
                 }
-            },
+            }
     
             // 获取下一个模式
             getNextMode() {
