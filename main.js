@@ -33,9 +33,11 @@ document.addEventListener('alpine:init', () => {
             lastFocusDate: null,
             
             // 待办事项
-            showTodoList: false,
+            showTodoPage: false,
             todos: [],
-            newTodoText: '',
+            editingTodo: null,
+            touchTimer: null,
+            touchStartTime: null,
             
             // 设置选项
             settings: {
@@ -179,12 +181,13 @@ document.addEventListener('alpine:init', () => {
                 };
             },
             
-            get activeTodoCount() {
-                return this.todos.filter(todo => !todo.completed).length;
+            get activeTodos() {
+                return this.todos.filter(todo => !todo.completed);
             },
         
-            get completedTodoCount() {
-                return this.todos.filter(todo => todo.completed).length;
+            // 计算属性：已完成的待办
+            get completedTodos() {
+                return this.todos.filter(todo => todo.completed);
             },
         
             // 待办事项相关方法
@@ -207,17 +210,14 @@ document.addEventListener('alpine:init', () => {
                 }
             },
         
-            toggleTodoList() {
-                this.showTodoList = !this.showTodoList;
-            },
-        
             addTodo() {
                 const text = prompt('添加新的待办事项:');
                 if (text && text.trim()) {
-                    this.todos.push({
+                    this.todos.unshift({
                         id: Date.now(),
                         text: text.trim(),
-                        completed: false
+                        completed: false,
+                        createdAt: new Date().toISOString()
                     });
                     this.saveTodos();
                     this.showToast('待办事项已添加', 'success', 'fa-check');
@@ -229,12 +229,62 @@ document.addEventListener('alpine:init', () => {
                 this.saveTodos();
             },
         
-            deleteTodo(id) {
-                this.todos = this.todos.filter(todo => todo.id !== id);
-                this.saveTodos();
-                this.showToast('待办事项已删除', 'info', 'fa-trash');
+            // 长按开始编辑
+            handleTodoTouchStart(event, todo) {
+                // 防止触发父元素的点击事件
+                event.preventDefault();
+                
+                this.touchStartTime = Date.now();
+                this.touchTimer = setTimeout(() => {
+                    this.editingTodo = {
+                        id: todo.id,
+                        text: todo.text
+                    };
+                    // 等待DOM更新后聚焦输入框
+                    this.$nextTick(() => {
+                        const input = event.target.querySelector('.todo-edit-input');
+                        if (input) {
+                            input.focus();
+                        }
+                    });
+                }, 500); // 500ms长按触发编辑
             },
         
+            handleTodoTouchEnd() {
+                if (this.touchTimer) {
+                    clearTimeout(this.touchTimer);
+                    this.touchTimer = null;
+                }
+            },
+        
+            // 保存编辑
+            saveTodoEdit() {
+                if (!this.editingTodo) return;
+        
+                const todo = this.todos.find(t => t.id === this.editingTodo.id);
+                if (todo && this.editingTodo.text.trim()) {
+                    todo.text = this.editingTodo.text.trim();
+                    this.saveTodos();
+                    this.showToast('待办事项已更新', 'success', 'fa-check');
+                }
+                this.editingTodo = null;
+            },
+        
+            // 取消编辑
+            cancelTodoEdit() {
+                this.editingTodo = null;
+            },
+        
+            // 确认删除
+            confirmDeleteTodo(todo) {
+                if (confirm('确定要删除这个待办事项吗？')) {
+                    this.todos = this.todos.filter(t => t.id !== todo.id);
+                    this.saveTodos();
+                    this.showToast('待办事项已删除', 'info', 'fa-trash');
+                }
+            },
+        
+            // 清除已完成
             clearCompleted() {
                 if (confirm('确定要清除所有已完成的待办事项吗？')) {
                     this.todos = this.todos.filter(todo => !todo.completed);

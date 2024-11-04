@@ -94,72 +94,141 @@
             </div>
         </div>
 
+        <!-- 待办事项页面 -->
+        <div class="main-container todo-page" x-show="showTodoPage" x-cloak>
+            <div class="todo-header">
+                <h2>待办事项</h2>
+                <button class="btn-base add-todo-btn" @click="addTodo">
+                    <i class="fas fa-plus"></i>
+                    <span>添加待办</span>
+                </button>
+            </div>
+            
+            <!-- 未完成待办 -->
+            <div class="todo-group" x-show="activeTodos.length > 0">
+                <div class="todo-group-header">
+                    <h3>未完成</h3>
+                    <span class="todo-count" x-text="activeTodos.length + ' 项'"></span>
+                </div>
+                <div class="todo-list">
+                    <template x-for="todo in activeTodos" :key="todo.id">
+                        <div class="todo-item"
+                             :class="{ 'editing': editingTodo?.id === todo.id }"
+                             @touchstart="handleTodoTouchStart($event, todo)"
+                             @touchend="handleTodoTouchEnd">
+                            <label class="todo-checkbox">
+                                <input type="checkbox" 
+                                       :checked="todo.completed"
+                                       @change="toggleTodo(todo)">
+                                <span class="checkmark"></span>
+                            </label>
+                            <template x-if="editingTodo?.id === todo.id">
+                                <input class="todo-edit-input"
+                                       type="text"
+                                       x-model="editingTodo.text"
+                                       @blur="saveTodoEdit"
+                                       @keydown.enter="saveTodoEdit"
+                                       @keydown.escape="cancelTodoEdit">
+                            </template>
+                            <span x-show="editingTodo?.id !== todo.id" 
+                                  class="todo-text" 
+                                  x-text="todo.text"></span>
+                            <button class="todo-delete" 
+                                    @click.stop="confirmDeleteTodo(todo)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <!-- 已完成待办 -->
+            <div class="todo-group" x-show="completedTodos.length > 0">
+                <div class="todo-group-header">
+                    <h3>已完成</h3>
+                    <div class="todo-group-actions">
+                        <span class="todo-count" x-text="completedTodos.length + ' 项'"></span>
+                        <button class="btn-base clear-completed" 
+                                @click="clearCompleted">
+                            清除已完成
+                        </button>
+                    </div>
+                </div>
+                <div class="todo-list">
+                    <template x-for="todo in completedTodos" :key="todo.id">
+                        <div class="todo-item completed"
+                             :class="{ 'editing': editingTodo?.id === todo.id }"
+                             @touchstart="handleTodoTouchStart($event, todo)"
+                             @touchend="handleTodoTouchEnd">
+                            <label class="todo-checkbox">
+                                <input type="checkbox" 
+                                       :checked="todo.completed"
+                                       @change="toggleTodo(todo)">
+                                <span class="checkmark"></span>
+                            </label>
+                            <template x-if="editingTodo?.id === todo.id">
+                                <input class="todo-edit-input"
+                                       type="text"
+                                       x-model="editingTodo.text"
+                                       @blur="saveTodoEdit"
+                                       @keydown.enter="saveTodoEdit"
+                                       @keydown.escape="cancelTodoEdit">
+                            </template>
+                            <span x-show="editingTodo?.id !== todo.id" 
+                                  class="todo-text" 
+                                  x-text="todo.text"></span>
+                            <button class="todo-delete" 
+                                    @click.stop="confirmDeleteTodo(todo)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        
+            <!-- 空状态提示 -->
+            <div class="todo-empty" x-show="todos.length === 0">
+                <i class="fas fa-list-check"></i>
+                <p>还没有待办事项</p>
+                <button class="btn-base" @click="addTodo">
+                    <i class="fas fa-plus"></i>
+                    添加第一个待办
+                </button>
+            </div>
+        </div>
+        
         <!-- 导航栏 -->
         <nav class="navigation">
             <div class="nav-item" 
-                 :class="{ 'active': currentMode === 'pomodoro' }"
-                 @click="changeMode('pomodoro')">
+                 :class="{ 'active': !showTodoPage && currentMode === 'pomodoro' }"
+                 @click="showTodoPage = false; changeMode('pomodoro')">
                 <i class="fas fa-lightbulb"></i>
                 <span>专注</span>
             </div>
             <div class="nav-item" 
-                 :class="{ 'active': currentMode === 'shortBreak' || currentMode === 'longBreak' }"
-                 @click="toggleBreakMode">
+                 :class="{ 'active': !showTodoPage && (currentMode === 'shortBreak' || currentMode === 'longBreak') }"
+                 @click="showTodoPage = false; toggleBreakMode()">
                 <i class="fas" :class="currentMode === 'longBreak' ? 'fa-couch' : 'fa-coffee'"></i>
                 <span x-text="currentMode === 'longBreak' ? '长休息' : '短休息'"></span>
             </div>
             
-            <div class="nav-center-button" @click="toggleTimer">
-                <i :class="isRunning ? 'fas fa-pause' : 'fas fa-play'"></i>
+            <div class="nav-center-button" 
+                 @click="showTodoPage ? addTodo() : toggleTimer()"
+                 :class="{ 'todo-add': showTodoPage }">
+                <i :class="showTodoPage ? 'fas fa-plus' : (isRunning ? 'fas fa-pause' : 'fas fa-play')"></i>
             </div>
         
             <div class="nav-item" @click="openStatsPanel">
                 <i class="fas fa-chart-column"></i>
                 <span>统计</span>
             </div>
-            <div class="nav-item" @click="toggleTodoList">
+            <div class="nav-item" 
+                 :class="{ 'active': showTodoPage }"
+                 @click="showTodoPage = !showTodoPage">
                 <i class="fas fa-list-check"></i>
                 <span>待办</span>
             </div>
         </nav>
-        
-        <!-- 添加待办事项清单面板 -->
-        <div class="todo-panel" :class="{ 'show': showTodoList }">
-            <div class="todo-header">
-                <h2>待办事项</h2>
-                <button class="btn-base add-todo-btn" @click="addTodo">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-            
-            <div class="todo-list">
-                <template x-for="todo in todos" :key="todo.id">
-                    <div class="todo-item" :class="{ 'completed': todo.completed }">
-                        <label class="todo-checkbox">
-                            <input type="checkbox" 
-                                   x-model="todo.completed"
-                                   @change="toggleTodo(todo)">
-                            <span class="checkmark"></span>
-                        </label>
-                        <span class="todo-text" x-text="todo.text"></span>
-                        <button class="todo-delete" @click="deleteTodo(todo.id)">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                </template>
-            </div>
-            
-            <div class="todo-footer" x-show="todos.length > 0">
-                <span class="todo-count">
-                    <strong x-text="activeTodoCount"></strong> 项待办
-                </span>
-                <button class="btn-base clear-completed" 
-                        @click="clearCompleted"
-                        x-show="completedTodoCount > 0">
-                    清除已完成
-                </button>
-            </div>
-        </div>
     
         <!-- 设置面板 -->
         <div class="modal" :class="{ 'active': showSettings }" @click="closeSettings">
