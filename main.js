@@ -32,6 +32,11 @@ document.addEventListener('alpine:init', () => {
             currentStreak: 0,
             lastFocusDate: null,
             
+            // 待办事项
+            showTodoList: false,
+            todos: [],
+            newTodoText: '',
+            
             // 设置选项
             settings: {
                 theme: 'fifth',
@@ -56,6 +61,7 @@ document.addEventListener('alpine:init', () => {
             // 初始化
             init() {
                 this.loadSettings();
+                this.loadTodos();
                 this.initWorker();
                 this.setupCircle();
                 this.handleResize();
@@ -171,6 +177,70 @@ document.addEventListener('alpine:init', () => {
                     strokeDasharray: `${this.circumference} ${this.circumference}`,
                     strokeDashoffset: offset
                 };
+            },
+            
+            get activeTodoCount() {
+                return this.todos.filter(todo => !todo.completed).length;
+            },
+        
+            get completedTodoCount() {
+                return this.todos.filter(todo => todo.completed).length;
+            },
+        
+            // 待办事项相关方法
+            loadTodos() {
+                try {
+                    const savedTodos = localStorage.getItem('todos');
+                    this.todos = savedTodos ? JSON.parse(savedTodos) : [];
+                } catch (error) {
+                    console.error('Error loading todos:', error);
+                    this.showToast('待办事项加载失败', 'error', 'fa-exclamation-circle');
+                }
+            },
+        
+            saveTodos() {
+                try {
+                    localStorage.setItem('todos', JSON.stringify(this.todos));
+                } catch (error) {
+                    console.error('Error saving todos:', error);
+                    this.showToast('待办事项保存失败', 'error', 'fa-exclamation-circle');
+                }
+            },
+        
+            toggleTodoList() {
+                this.showTodoList = !this.showTodoList;
+            },
+        
+            addTodo() {
+                const text = prompt('添加新的待办事项:');
+                if (text && text.trim()) {
+                    this.todos.push({
+                        id: Date.now(),
+                        text: text.trim(),
+                        completed: false
+                    });
+                    this.saveTodos();
+                    this.showToast('待办事项已添加', 'success', 'fa-check');
+                }
+            },
+        
+            toggleTodo(todo) {
+                todo.completed = !todo.completed;
+                this.saveTodos();
+            },
+        
+            deleteTodo(id) {
+                this.todos = this.todos.filter(todo => todo.id !== id);
+                this.saveTodos();
+                this.showToast('待办事项已删除', 'info', 'fa-trash');
+            },
+        
+            clearCompleted() {
+                if (confirm('确定要清除所有已完成的待办事项吗？')) {
+                    this.todos = this.todos.filter(todo => !todo.completed);
+                    this.saveTodos();
+                    this.showToast('已清除完成项目', 'info', 'fa-check-double');
+                }
             },
     
             get formatTime() {
