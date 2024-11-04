@@ -11,6 +11,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <link rel="apple-touch-icon" href="icons/icon-512x512.png">
     <script>
@@ -98,7 +101,151 @@
         </div>
         </template>
 
-        <!-- 待办事项页面 -->
+        <!-- 导航栏 -->
+        <nav class="navigation">
+            <div class="nav-item" 
+                 :class="{ 'active': !showTodoPage && currentMode === 'pomodoro' }"
+                 @click="showTodoPage = false; changeMode('pomodoro')">
+                <i class="fas fa-lightbulb"></i>
+                <span>专注</span>
+            </div>
+            <div class="nav-item" 
+                 :class="{ 'active': !showTodoPage && (currentMode === 'shortBreak' || currentMode === 'longBreak') }"
+                 @click="showTodoPage = false; toggleBreakMode()">
+                <i class="fas" :class="currentMode === 'longBreak' ? 'fa-couch' : 'fa-coffee'"></i>
+                <span x-text="currentMode === 'longBreak' ? '长休息' : '短休息'"></span>
+            </div>
+            
+            <div class="nav-center-button" @click="toggleTimer">
+                <i :class="isRunning ? 'fas fa-pause' : 'fas fa-play'"></i>
+            </div>
+        
+            <div class="nav-item" @click="openStatsPanel">
+                <i class="fas fa-chart-column"></i>
+                <span>统计</span>
+            </div>
+            <div class="nav-item" 
+                 :class="{ 'active': showTodoPage }"
+                 @click="showTodoPage = !showTodoPage">
+                <i class="fas fa-list-check"></i>
+                <span>待办</span>
+            </div>
+        </nav>
+    
+        <!-- 设置面板 -->
+        <div class="modal" :class="{ 'active': showSettings }" @click="closeSettings">
+            <div class="modal-content" @click.stop>
+                <div class="modal-header">
+                    <h2>设置</h2>
+                    <button class="btn-base close-btn" @click="closeSettings">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-group">
+                        <h3>主题色</h3>
+                        <div class="theme-grid">
+                            <button class="theme-button"
+                                    :class="{ active: settings.theme === 'first' }"
+                                    @click="changeTheme('first')"
+                                    style="background: var(--theme-first)">
+                            </button>
+                            <button class="theme-button"
+                                    :class="{ active: settings.theme === 'second' }"
+                                    @click="changeTheme('second')"
+                                    style="background: var(--theme-second)">
+                            </button>
+                            <button class="theme-button"
+                                    :class="{ active: settings.theme === 'third' }"
+                                    @click="changeTheme('third')"
+                                    style="background: var(--theme-third)">
+                            </button>
+                            <button class="theme-button"
+                                    :class="{ active: settings.theme === 'fourth' }"
+                                    @click="changeTheme('fourth')"
+                                    style="background: var(--theme-fourth)">
+                            </button>
+                            <button class="theme-button"
+                                    :class="{ active: settings.theme === 'fifth' }"
+                                    @click="changeTheme('fifth')"
+                                    style="background: var(--theme-fifth)">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                       <h3>时间设置（分钟）</h3>
+                       <div class="time-input">
+                           <label>专注时长</label>
+                           <input type="number" 
+                                  :value="Math.floor(times.pomodoro / 60)"
+                                  @input="updateTime('pomodoro', $event.target.value)"
+                                  min="1"
+                                  max="60">
+                       </div>
+                       <div class="time-input">
+                           <label>短休息时长</label>
+                           <input type="number" 
+                                  :value="Math.floor(times.shortBreak / 60)"
+                                  @input="updateTime('shortBreak', $event.target.value)"
+                                  min="1"
+                                  max="60">
+                       </div>
+                       <div class="time-input">
+                           <label>长休息时长</label>
+                           <input type="number" 
+                                  :value="Math.floor(times.longBreak / 60)"
+                                  @input="updateTime('longBreak', $event.target.value)"
+                                  min="1"
+                                  max="60">
+                       </div>
+                   </div>
+       
+                   <div class="settings-group">
+                       <h3>其它设置</h3>
+                       <div class="time-input">
+                           <label>长休息间隔（次数）</label>
+                           <input type="number" 
+                                  :value="settings.longBreakInterval"
+                                  @input="settings.longBreakInterval = Math.max(1, parseInt($event.target.value) || 4)"
+                                  min="1"
+                                  max="10">
+                       </div>
+                       <div class="switch-group">
+                           <label class="switch-label">声音提醒</label>
+                           <label class="switch">
+                               <input type="checkbox" x-model="settings.soundEnabled">
+                               <span class="switch-slider"></span>
+                           </label>
+                       </div>
+                       <div class="switch-group">
+                           <label class="switch-label">通知开关</label>
+                           <label class="switch">
+                               <input type="checkbox" 
+                                      x-model="settings.notificationsEnabled"
+                                      @change="requestNotificationPermission">
+                               <span class="switch-slider"></span>
+                           </label>
+                       </div>
+                       <div class="switch-group">
+                           <label class="switch-label">自动开始休息</label>
+                           <label class="switch">
+                               <input type="checkbox" x-model="settings.autoStartBreak">
+                               <span class="switch-slider"></span>
+                           </label>
+                       </div>
+                       <div class="switch-group">
+                           <label class="switch-label">自动开始专注</label>
+                           <label class="switch">
+                               <input type="checkbox" x-model="settings.autoStartPomodoro">
+                               <span class="switch-slider"></span>
+                           </label>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+       
+       <!-- 待办事项页面 -->
         <template x-if="showTodoPage">
             <div class="main-container todo-page">
                 <div class="todo-header">
@@ -208,154 +355,6 @@
                 </div>
             </div>
         </template>
-        
-        <!-- 导航栏 -->
-        <nav class="navigation">
-            <div class="nav-item" 
-                 :class="{ 'active': !showTodoPage && currentMode === 'pomodoro' }"
-                 @click="showTodoPage = false; changeMode('pomodoro')">
-                <i class="fas fa-lightbulb"></i>
-                <span>专注</span>
-            </div>
-            <div class="nav-item" 
-                 :class="{ 'active': !showTodoPage && (currentMode === 'shortBreak' || currentMode === 'longBreak') }"
-                 @click="showTodoPage = false; toggleBreakMode()">
-                <i class="fas" :class="currentMode === 'longBreak' ? 'fa-couch' : 'fa-coffee'"></i>
-                <span x-text="currentMode === 'longBreak' ? '长休息' : '短休息'"></span>
-            </div>
-            
-            <div class="nav-center-button" @click="toggleTimer">
-                <i :class="isRunning ? 'fas fa-pause' : 'fas fa-play'"></i>
-            </div>
-        
-            <div class="nav-item" @click="openStatsPanel">
-                <i class="fas fa-chart-column"></i>
-                <span>统计</span>
-            </div>
-            <div class="nav-item" 
-                 :class="{ 'active': showTodoPage }"
-                 @click="showTodoPage = !showTodoPage">
-                <i class="fas fa-list-check"></i>
-                <span>待办</span>
-            </div>
-        </nav>
-    
-        <!-- 设置面板 -->
-        <div class="modal" :class="{ 'active': showSettings }" @click="closeSettings">
-            <div class="modal-content" @click.stop>
-                <div class="modal-header">
-                    <h2>设置</h2>
-                    <button class="btn-base close-btn" @click="closeSettings">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="settings-group">
-                        <h3>主题色</h3>
-                        <div class="theme-grid">
-                            <button class="theme-button"
-                                    :class="{ active: settings.theme === 'first' }"
-                                    @click="changeTheme('first')"
-                                    style="background: var(--theme-first)">
-                            </button>
-                            <button class="theme-button"
-                                    :class="{ active: settings.theme === 'second' }"
-                                    @click="changeTheme('second')"
-                                    style="background: var(--theme-second)">
-                            </button>
-                            <button class="theme-button"
-                                    :class="{ active: settings.theme === 'third' }"
-                                    @click="changeTheme('third')"
-                                    style="background: var(--theme-third)">
-                            </button>
-                            <button class="theme-button"
-                                    :class="{ active: settings.theme === 'fourth' }"
-                                    @click="changeTheme('fourth')"
-                                    style="background: var(--theme-fourth)">
-                            </button>
-                            <button class="theme-button"
-                                    :class="{ active: settings.theme === 'fifth' }"
-                                    @click="changeTheme('fifth')"
-                                    style="background: var(--theme-fifth)">
-                            </button>
-                        </div>
-                    </div>
-                    <div class="settings-group">
-                       <h3>时间设置（分钟）</h3>
-                       <div class="time-input">
-                           <label>专注时长</label>
-                           <input type="number" 
-                                  :value="Math.floor(times.pomodoro / 60)"
-                                  @input="updateTime('pomodoro', $event.target.value)"
-                                  min="1"
-                                  max="60">
-                       </div>
-                       <div class="time-input">
-                           <label>短休息时长</label>
-                           <input type="number" 
-                                  :value="Math.floor(times.shortBreak / 60)"
-                                  @input="updateTime('shortBreak', $event.target.value)"
-                                  min="1"
-                                  max="60">
-                       </div>
-                       <div class="time-input">
-                           <label>长休息时长</label>
-                           <input type="number" 
-                                  :value="Math.floor(times.longBreak / 60)"
-                                  @input="updateTime('longBreak', $event.target.value)"
-                                  min="1"
-                                  max="60">
-                       </div>
-                   </div>
-       
-                   <div class="settings-group">
-                       <h3>通知设置</h3>
-                       <div class="switch-group">
-                           <label class="switch-label">声音提醒</label>
-                           <label class="switch">
-                               <input type="checkbox" x-model="settings.soundEnabled">
-                               <span class="switch-slider"></span>
-                           </label>
-                       </div>
-                       <div class="switch-group">
-                           <label class="switch-label">通知开关</label>
-                           <label class="switch">
-                               <input type="checkbox" 
-                                      x-model="settings.notificationsEnabled"
-                                      @change="requestNotificationPermission">
-                               <span class="switch-slider"></span>
-                           </label>
-                       </div>
-                       <div class="switch-group">
-                           <label class="switch-label">自动开始休息</label>
-                           <label class="switch">
-                               <input type="checkbox" x-model="settings.autoStartBreak">
-                               <span class="switch-slider"></span>
-                           </label>
-                       </div>
-                       <div class="switch-group">
-                           <label class="switch-label">自动开始专注</label>
-                           <label class="switch">
-                               <input type="checkbox" x-model="settings.autoStartPomodoro">
-                               <span class="switch-slider"></span>
-                           </label>
-                       </div>
-                   </div>
-       
-                   <div class="settings-group">
-                       <h3>其他设置</h3>
-                       <div class="time-input">
-                           <label>长休息间隔（次数）</label>
-                           <input type="number" 
-                                  :value="settings.longBreakInterval"
-                                  @input="settings.longBreakInterval = Math.max(1, parseInt($event.target.value) || 4)"
-                                  min="1"
-                                  max="10">
-                       </div>
-                   </div>
-               </div>
-           </div>
-       </div>
        
        <!-- 统计面板 -->
        <div class="modal" :class="{ 'active': showStatsPanel }" @click="closeStatsPanel">
@@ -378,7 +377,7 @@
                        </div>
                        <div class="stats-item">
                            <div class="stats-value" x-text="Math.floor(totalFocusTime / 60)"></div>
-                           <div class="stats-label">总专注时长(分钟)</div>
+                           <div class="stats-label">总专注时长</div>
                        </div>
                        <div class="stats-item">
                            <div class="stats-value" x-text="currentStreak"></div>

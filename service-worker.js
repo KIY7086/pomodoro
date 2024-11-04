@@ -10,6 +10,7 @@ const ASSETS_TO_CACHE = [
     'https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.js',
     'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+    'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap'
 ];
 
 // 安装Service Worker
