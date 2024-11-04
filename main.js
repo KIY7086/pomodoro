@@ -200,7 +200,7 @@ document.addEventListener('alpine:init', () => {
                     this.showToast('待办事项加载失败', 'error', 'fa-exclamation-circle');
                 }
             },
-        
+
             saveTodos() {
                 try {
                     localStorage.setItem('todos', JSON.stringify(this.todos));
@@ -209,7 +209,7 @@ document.addEventListener('alpine:init', () => {
                     this.showToast('待办事项保存失败', 'error', 'fa-exclamation-circle');
                 }
             },
-        
+
             addTodo() {
                 const text = prompt('添加新的待办事项:');
                 if (text && text.trim()) {
@@ -223,44 +223,74 @@ document.addEventListener('alpine:init', () => {
                     this.showToast('待办事项已添加', 'success', 'fa-check');
                 }
             },
-        
+
             toggleTodo(todo) {
                 todo.completed = !todo.completed;
                 this.saveTodos();
             },
-        
-            // 长按开始编辑
-            handleTodoTouchStart(event, todo) {
-                // 防止触发父元素的点击事件
+
+            // 开始编辑待办事项
+            startTodoEdit(todo) {
+                // 如果已经在编辑中，不要重复开始编辑
+                if (this.editingTodo?.id === todo.id) return;
+                
+                this.editingTodo = {
+                    id: todo.id,
+                    text: todo.text
+                };
+            },
+
+            // 双击编辑（PC端）
+            handleTodoDoubleClick(todo, event) {
                 event.preventDefault();
+                this.startTodoEdit(todo);
+                // 等待DOM更新后聚焦输入框
+                this.$nextTick(() => {
+                    const input = event.target.closest('.todo-item').querySelector('.todo-edit-input');
+                    if (input) {
+                        input.focus();
+                    }
+                });
+            },
+
+            // 长按开始编辑（移动端）
+            handleTodoTouchStart(event, todo) {
+                event.preventDefault();
+                
+                // 如果已经在编辑中，不开始长按计时
+                if (this.editingTodo?.id === todo.id) return;
                 
                 this.touchStartTime = Date.now();
                 this.touchTimer = setTimeout(() => {
-                    this.editingTodo = {
-                        id: todo.id,
-                        text: todo.text
-                    };
+                    this.startTodoEdit(todo);
                     // 等待DOM更新后聚焦输入框
                     this.$nextTick(() => {
-                        const input = event.target.querySelector('.todo-edit-input');
+                        const input = event.target.closest('.todo-item').querySelector('.todo-edit-input');
                         if (input) {
                             input.focus();
                         }
                     });
                 }, 500); // 500ms长按触发编辑
             },
-        
+
+            handleTodoTouchMove() {
+                if (this.touchTimer) {
+                    clearTimeout(this.touchTimer);
+                    this.touchTimer = null;
+                }
+            },
+
             handleTodoTouchEnd() {
                 if (this.touchTimer) {
                     clearTimeout(this.touchTimer);
                     this.touchTimer = null;
                 }
             },
-        
+
             // 保存编辑
             saveTodoEdit() {
                 if (!this.editingTodo) return;
-        
+
                 const todo = this.todos.find(t => t.id === this.editingTodo.id);
                 if (todo && this.editingTodo.text.trim()) {
                     todo.text = this.editingTodo.text.trim();
@@ -269,12 +299,12 @@ document.addEventListener('alpine:init', () => {
                 }
                 this.editingTodo = null;
             },
-        
+
             // 取消编辑
             cancelTodoEdit() {
                 this.editingTodo = null;
             },
-        
+
             // 确认删除
             confirmDeleteTodo(todo) {
                 if (confirm('确定要删除这个待办事项吗？')) {
@@ -283,7 +313,7 @@ document.addEventListener('alpine:init', () => {
                     this.showToast('待办事项已删除', 'info', 'fa-trash');
                 }
             },
-        
+
             // 清除已完成
             clearCompleted() {
                 if (confirm('确定要清除所有已完成的待办事项吗？')) {
