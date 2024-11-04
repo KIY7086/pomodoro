@@ -1408,6 +1408,6 @@ input:checked + .switch-slider {
         font-weight: 500;
     }
     .btn-base {
-        background-color: rgba(256,256,256,0.04);
+        background-color: rgba(255,255,255,0.04);
     }
 }
