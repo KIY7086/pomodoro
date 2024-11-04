@@ -119,9 +119,9 @@
                         <template x-for="todo in activeTodos" :key="todo.id">
                             <div class="todo-item"
                                  :class="{ 'editing': editingTodo?.id === todo.id }"
-                                 @touchstart="handleTodoTouchStart($event, todo)"
-                                 @touchend="handleTodoTouchEnd">
-                                <label class="todo-checkbox">
+                                 @touchstart.self="handleTodoTouchStart($event, todo)"
+                                 @touchend.self="handleTodoTouchEnd">
+                                <label class="todo-checkbox" @click.stop>
                                     <input type="checkbox" 
                                            :checked="todo.completed"
                                            @change="toggleTodo(todo)">
@@ -137,9 +137,12 @@
                                 </template>
                                 <span x-show="editingTodo?.id !== todo.id" 
                                       class="todo-text" 
-                                      x-text="todo.text"></span>
+                                      x-text="todo.text"
+                                      @touchstart.stop="handleTodoTouchStart($event, todo)"
+                                      @touchend.stop="handleTodoTouchEnd"></span>
                                 <button class="todo-delete" 
-                                        @click.stop="confirmDeleteTodo(todo)">
+                                        @click.stop="confirmDeleteTodo(todo)"
+                                        @touchend.stop>
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -163,9 +166,9 @@
                         <template x-for="todo in completedTodos" :key="todo.id">
                             <div class="todo-item completed"
                                  :class="{ 'editing': editingTodo?.id === todo.id }"
-                                 @touchstart="handleTodoTouchStart($event, todo)"
-                                 @touchend="handleTodoTouchEnd">
-                                <label class="todo-checkbox">
+                                 @touchstart.self="handleTodoTouchStart($event, todo)"
+                                 @touchend.self="handleTodoTouchEnd">
+                                <label class="todo-checkbox" @click.stop>
                                     <input type="checkbox" 
                                            :checked="todo.completed"
                                            @change="toggleTodo(todo)">
@@ -181,9 +184,12 @@
                                 </template>
                                 <span x-show="editingTodo?.id !== todo.id" 
                                       class="todo-text" 
-                                      x-text="todo.text"></span>
+                                      x-text="todo.text"
+                                      @touchstart.stop="handleTodoTouchStart($event, todo)"
+                                      @touchend.stop="handleTodoTouchEnd"></span>
                                 <button class="todo-delete" 
-                                        @click.stop="confirmDeleteTodo(todo)">
+                                        @click.stop="confirmDeleteTodo(todo)"
+                                        @touchend.stop>
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
