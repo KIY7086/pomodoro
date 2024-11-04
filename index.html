@@ -108,7 +108,7 @@
                         <span>新建待办</span>
                     </button>
                 </div>
-
+                
                 <!-- 未完成待办 -->
                 <div class="todo-group" x-show="activeTodos.length > 0">
                     <div class="todo-group-header">
@@ -118,41 +118,35 @@
                     <div class="todo-list">
                         <template x-for="todo in activeTodos" :key="todo.id">
                             <div class="todo-item"
-                                :class="{ 'editing': editingTodo?.id === todo.id }"
-                                @dblclick="handleTodoDoubleClick(todo, $event)"
-                                @touchstart="handleTodoTouchStart($event, todo)"
-                                @touchmove="handleTodoTouchMove"
-                                @touchend="handleTodoTouchEnd"
-                                @touchcancel="handleTodoTouchEnd">
-                                <label class="todo-checkbox" @click.stop @dblclick.stop>
+                                 :class="{ 'editing': editingTodo?.id === todo.id }"
+                                 @touchstart="handleTodoTouchStart($event, todo)"
+                                 @touchend="handleTodoTouchEnd">
+                                <label class="todo-checkbox">
                                     <input type="checkbox" 
-                                        :checked="todo.completed"
-                                        @change="toggleTodo(todo)">
+                                           :checked="todo.completed"
+                                           @change="toggleTodo(todo)">
                                     <span class="checkmark"></span>
                                 </label>
                                 <template x-if="editingTodo?.id === todo.id">
                                     <input class="todo-edit-input"
-                                        type="text"
-                                        x-model="editingTodo.text"
-                                        @blur="saveTodoEdit"
-                                        @keydown.enter="saveTodoEdit"
-                                        @keydown.escape="cancelTodoEdit">
+                                           type="text"
+                                           x-model="editingTodo.text"
+                                           @blur="saveTodoEdit"
+                                           @keydown.enter="saveTodoEdit"
+                                           @keydown.escape="cancelTodoEdit">
                                 </template>
-                                <div x-show="editingTodo?.id !== todo.id"
-                                    class="todo-text-wrapper">
-                                    <span class="todo-text" x-text="todo.text"></span>
-                                </div>
+                                <span x-show="editingTodo?.id !== todo.id" 
+                                      class="todo-text" 
+                                      x-text="todo.text"></span>
                                 <button class="todo-delete" 
-                                        @click.stop 
-                                        @dblclick.stop
-                                        @click="confirmDeleteTodo(todo)">
+                                        @click.stop="confirmDeleteTodo(todo)">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </template>
                     </div>
                 </div>
-
+                
                 <!-- 已完成待办 -->
                 <div class="todo-group" x-show="completedTodos.length > 0">
                     <div class="todo-group-header">
@@ -168,34 +162,28 @@
                     <div class="todo-list">
                         <template x-for="todo in completedTodos" :key="todo.id">
                             <div class="todo-item completed"
-                                :class="{ 'editing': editingTodo?.id === todo.id }"
-                                @dblclick="handleTodoDoubleClick(todo, $event)"
-                                @touchstart="handleTodoTouchStart($event, todo)"
-                                @touchmove="handleTodoTouchMove"
-                                @touchend="handleTodoTouchEnd"
-                                @touchcancel="handleTodoTouchEnd">
-                                <label class="todo-checkbox" @click.stop @dblclick.stop>
+                                 :class="{ 'editing': editingTodo?.id === todo.id }"
+                                 @touchstart="handleTodoTouchStart($event, todo)"
+                                 @touchend="handleTodoTouchEnd">
+                                <label class="todo-checkbox">
                                     <input type="checkbox" 
-                                        :checked="todo.completed"
-                                        @change="toggleTodo(todo)">
+                                           :checked="todo.completed"
+                                           @change="toggleTodo(todo)">
                                     <span class="checkmark"></span>
                                 </label>
                                 <template x-if="editingTodo?.id === todo.id">
                                     <input class="todo-edit-input"
-                                        type="text"
-                                        x-model="editingTodo.text"
-                                        @blur="saveTodoEdit"
-                                        @keydown.enter="saveTodoEdit"
-                                        @keydown.escape="cancelTodoEdit">
+                                           type="text"
+                                           x-model="editingTodo.text"
+                                           @blur="saveTodoEdit"
+                                           @keydown.enter="saveTodoEdit"
+                                           @keydown.escape="cancelTodoEdit">
                                 </template>
-                                <div x-show="editingTodo?.id !== todo.id"
-                                    class="todo-text-wrapper">
-                                    <span class="todo-text" x-text="todo.text"></span>
-                                </div>
+                                <span x-show="editingTodo?.id !== todo.id" 
+                                      class="todo-text" 
+                                      x-text="todo.text"></span>
                                 <button class="todo-delete" 
-                                        @click.stop 
-                                        @dblclick.stop
-                                        @click="confirmDeleteTodo(todo)">
+                                        @click.stop="confirmDeleteTodo(todo)">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
