@@ -523,7 +523,7 @@ document.addEventListener('alpine:init', () => {
                         this.start();
                     }, 1000);
                 }
-            }
+            },
     
             // 获取下一个模式
             getNextMode() {
