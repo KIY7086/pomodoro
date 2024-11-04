@@ -252,7 +252,7 @@ document.addEventListener('alpine:init', () => {
                         duration: 0.4,
                         ease: 'back.out(1.7)'
                     });
-            }
+            },
     
             toggleBreakMode() {
                 if (this.currentMode === 'pomodoro') {
