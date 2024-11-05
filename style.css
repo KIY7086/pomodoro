@@ -77,7 +77,7 @@
     --info: #3b82f6;
     --background: #f8fafc;
     --surface: #fff;
-    --surface-hover: #f1f5f9;
+    --surface-hover: hsl(210, 40%, 96%);
     --surface-pressed: #e2e8f0;
     --surface-transparent: hsla(0, 0%, 100%, 0.98);
     --text: #1e293b;
@@ -381,7 +381,7 @@ body {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: var(--text-tertiary) transparent;
+    scrollbar-color: var(--primary) transparent;
 }
 .settings-group h3 {
     font-weight: 600;
@@ -775,15 +775,14 @@ body {
 .todo-page {
     width: 100%;
     max-width: 800px;
-    margin: 0 auto;
+    margin: 0;
+    gap: 1rem;
     padding: 5rem 1.5rem 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
 }
 .todo-header {
     justify-content: space-between;
-    margin-bottom: 1rem;
     width: 100%;
 }
 .todo-group-header h3,
@@ -792,6 +791,10 @@ body {
     font-weight: 600;
     color: var(--text);
     margin: 0;
+    margin-left: 0.6rem;
+}
+.todo-header h2 {
+    margin-left: 0.8rem;
 }
 .todo-empty,
 .todo-empty p,
@@ -928,7 +931,7 @@ body {
 }
 .todo-item {
     padding: 1rem;
-    background: var(--background);
+    background: rgba(0, 0, 0, 0.026);
     border-radius: var(--radius-lg);
 }
 .todo-item:hover {
@@ -990,8 +993,8 @@ body {
 }
 .todo-checkbox input:checked + .checkmark:after {
     display: block;
-    content: "";
-    font-family: Font Awesome\6 Free;
+    content: "\f00c";
+    font-family: 'FontAwesome';
     font-weight: 900;
     color: #fff;
     font-size: 0.875rem;
@@ -1021,13 +1024,6 @@ body {
     position: relative;
     min-height: 100vh;
     background: repeating-linear-gradient(
-            -45deg,
-            var(--bg-pattern),
-            var(--bg-pattern) 1px,
-            transparent 1px,
-            transparent 20px
-        ),
-        repeating-linear-gradient(
             90deg,
             var(--bg-pattern),
             var(--bg-pattern) 1px,
@@ -1129,10 +1125,6 @@ body {
 .switch-slider:before {
     transition: transform 0.3s var(--ease-brush);
     box-shadow: var(--shadow-sm);
-}
-.switch input:checked + .switch-slider {
-    background: var(--primary);
-    background: var(--theme-first);
 }
 .switch input:checked + .switch-slider:before {
     transform: translateX(20px);
@@ -1243,8 +1235,7 @@ body {
     opacity: 0.3;
 }
 input:checked + .switch-slider {
-    background: var(--theme-first);
-    border-color: var(--theme-first);
+    background: var(--primary);
 }
 .close-btn {
     width: 2.5rem;
@@ -1252,10 +1243,10 @@ input:checked + .switch-slider {
     border-radius: 0.5rem;
     background: var(--panel-bg);
     color: #594d44;
-    border: 1px solid var(--panel-border);
+    border: 1.5px solid var(--panel-border);
 }
 .close-btn:hover {
-    background: #594d44;
+    background: var(--error);
     color: #fff;
     transform: rotate(90deg);
 }
@@ -1273,10 +1264,10 @@ input:checked + .switch-slider {
     }
     .time-input input {
         background: #2a2522;
-        border-color: #403632;
+        border-color: var(--primary);
     }
     .switch-slider {
-        background: #403632;
+        background: var(--primary);
     }
     .close-btn {
         color: #e8e1d3;
@@ -1393,7 +1384,7 @@ input:checked + .switch-slider {
         background: #fff;
     }
     .switch input:checked + .switch-slider {
-        background: var(--theme-first);
+        background: var(--primary);
     }
     .stats-item,
     .time-input,
@@ -1412,5 +1403,8 @@ input:checked + .switch-slider {
     }
     .btn-base {
         background-color: rgba(255,255,255,0.04);
+    }
+    .todo-item{
+        background: rgba(255, 255, 255, 0.2);
     }
 }
