@@ -175,7 +175,8 @@
         --shadow-md: 0 6px 12px rgba(0, 0, 0, 0.5);
         --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.6);
         --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7); /* 使用新的更深的阴影 */
-} 
+    }
+}
 
 * {
     margin: 0;
@@ -277,6 +278,7 @@ body {
     padding: 0 1.5rem var(--nav-bottom-space);
     background: var(--surface-transparent);
     -webkit-backdrop-filter: blur(var(--nav-blur));
+    backdrop-filter: blur(var(--nav-blur));
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
@@ -428,6 +430,7 @@ body {
     text-align: center;
     transition: all var(--transition-normal) var(--ease-spring);
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 .time-input input::-webkit-inner-spin-button,
 .time-input input::-webkit-outer-spin-button {
@@ -936,7 +939,7 @@ body {
     width: 2.25rem;
     height: 2.25rem;
     border: 0;
-    background: var(--surface-hover);
+    background: var(--surface);
     color: var(--error);
     border-radius: var(--radius);
     cursor: pointer;
