@@ -775,7 +775,7 @@ body {
 .todo-page {
     width: 100%;
     max-width: 800px;
-    margin: 0;
+    margin: 0 auto;
     gap: 1rem;
     padding: 5rem 1.5rem 1.5rem;
     display: flex;
