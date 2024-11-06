@@ -60,6 +60,31 @@ document.addEventListener('alpine:init', () => {
                 processing: false
             },
     
+            // 当前待办状态
+            currentTodo: null,
+    
+            // 确保初始化 todoStats
+            todoStats: {},
+    
+            // 添加选择待办的方法
+            selectTodo(todo) {
+                if (todo.completed) return; // 已完成的待办不可选择
+                
+                this.currentTodo = todo;
+                this.showTodoPage = false; // 切换到计时器页面
+                
+                // 如果计时器正在运行，先暂停
+                if (this.isRunning) {
+                    this.pause();
+                }
+                
+                // 切换到专注模式
+                this.changeMode('pomodoro');
+                
+                // 显示提示
+                this.showToast(`开始专注: ${todo.text}`, 'info', 'fa-list-check');
+            },
+    
             // 初始化
             init() {
                 this.loadSettings();
@@ -69,6 +94,9 @@ document.addEventListener('alpine:init', () => {
                 this.handleResize();
                 this.checkAndUpdateStreak();
                 this.applyTheme(this.settings.theme);
+                
+                // 确保在其他初始化之前加载统计数据
+                this.loadStats();
                 
                 // 事件监听器设置
                 window.addEventListener('resize', () => this.handleResize());
@@ -83,6 +111,8 @@ document.addEventListener('alpine:init', () => {
                         this.saveSettings();
                     }
                 }
+    
+                this.loadStats();
             },
     
             // Web Worker 初始化
@@ -270,7 +300,7 @@ document.addEventListener('alpine:init', () => {
                 this.editingTodo = null;
             },
         
-            // 取消编辑
+            // ���消编辑
             cancelTodoEdit() {
                 this.editingTodo = null;
             },
@@ -542,7 +572,7 @@ document.addEventListener('alpine:init', () => {
             },
     
             resetStats() {
-                if (confirm('确定要重置所有统计数据吗？')) {
+                if (confirm('确定重置所有统计数据吗？')) {
                     this.completedSessions = 0;
                     this.todaySessions = 0;
                     this.totalFocusTime = 0;
@@ -757,6 +787,111 @@ document.addEventListener('alpine:init', () => {
             
             if (this.wakeLock) {
                 this.wakeLock.release().catch(console.error);
+            }
+        },
+
+        // 完成任务并显示统计信息
+        completeTodoWithStats() {
+            if (!this.currentTodo) return;
+            
+            // 停止计时器
+            this.pause();
+            
+            // 安全地获取或创建统计数据
+            const todoId = this.currentTodo.id;
+            if (!this.todoStats) {
+                this.todoStats = {};
+            }
+            
+            // 初始化或更新当前待办的统计
+            if (!this.todoStats[todoId]) {
+                this.todoStats[todoId] = {
+                    pomodoroCount: 0,
+                    shortBreakCount: 0,
+                    longBreakCount: 0,
+                    totalFocusTime: 0,
+                    lastSessionTime: 0
+                };
+            }
+            
+            // 计算本次专注时间
+            const currentSessionTime = this.times.pomodoro - this.timeLeft;
+            
+            // 更新统计数据
+            const stats = this.todoStats[todoId];
+            stats.lastSessionTime = currentSessionTime;
+            stats.totalFocusTime += currentSessionTime;
+            stats.pomodoroCount += 1;
+            
+            // 更新待办状态
+            const todoIndex = this.todos.findIndex(t => t.id === this.currentTodo.id);
+            if (todoIndex !== -1) {
+                this.todos[todoIndex].completed = true;
+                this.saveTodos();
+            }
+            
+            // 保存统计数据
+            this.saveStats();
+            
+            // 显示完成统计信息
+            const message = `
+                本次专注：${Math.floor(currentSessionTime / 60)} 分钟
+                总计时间：${Math.floor(stats.totalFocusTime / 60)} 分钟
+                完成番茄：${stats.pomodoroCount} 个
+                短休息：${stats.shortBreakCount} 次
+                长休息：${stats.longBreakCount} 次
+            `;
+            
+            this.showCompletionModal(message);
+            
+            // 重置计时器
+            this.reset();
+            
+            // 清除当前待办
+            this.currentTodo = null;
+        },
+
+        // 显示完成统计弹窗
+        showCompletionModal(message) {
+            const modal = document.createElement('div');
+            modal.className = 'completion-modal';
+            modal.innerHTML = `
+                <div class="completion-content">
+                    <h3><i class="fas fa-check-circle"></i> 任务完成！</h3>
+                    <div class="stats-details">
+                        ${message.split('\n')
+                            .map(line => line.trim())
+                            .filter(line => line)
+                            .map(line => `<p>${line}</p>`)
+                            .join('')}
+                    </div>
+                    <button class="btn-base" onclick="this.closest('.completion-modal').remove()">
+                        <i class="fas fa-check"></i> 确定
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        },
+
+        // 保存统计数据
+        saveStats() {
+            try {
+                if (this.todoStats) {
+                    localStorage.setItem('todoStats', JSON.stringify(this.todoStats));
+                }
+            } catch (error) {
+                console.error('Error saving todo stats:', error);
+            }
+        },
+
+        // 加载统计数据
+        loadStats() {
+            try {
+                const savedStats = localStorage.getItem('todoStats');
+                this.todoStats = savedStats ? JSON.parse(savedStats) : {};
+            } catch (error) {
+                console.error('Error loading todo stats:', error);
+                this.todoStats = {};
             }
         }
     }));
