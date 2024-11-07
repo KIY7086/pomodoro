@@ -1119,7 +1119,6 @@ body {
     position: relative;
     width: 1.5rem;
     height: 1.5rem;
-    margin-right: 1rem;
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -2096,4 +2095,261 @@ i.fas, i.far, i.fab {
     .toast {
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
     }
+}
+
+/* 编辑模式按钮样式 */
+.edit-mode-btn,
+.done-edit-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    height: auto;
+    background: transparent;
+    
+    &:hover {
+        background: var(--primary);
+        color: #fff;
+    }
+}
+
+/* 编辑模式下的待办项样式 */
+.todo-item {
+    position: relative;
+    padding-right: 1rem; /* 默认状态下的右侧padding */
+    
+    &.edit-mode {
+        
+        .todo-delete {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* 编辑模式下禁用选择功能 */
+        cursor: default;
+        
+        &:hover {
+            transform: none;
+        }
+    }
+}
+
+/* 删除按钮默认样式 */
+.todo-delete {
+    opacity: 0;
+    pointer-events: none;
+    transition: all var(--transition-normal) var(--ease-spring);
+}
+
+/* 优化 todo-group-actions 布局 */
+.todo-group-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* 暗色模式适配 */
+@media (prefers-color-scheme: dark) {
+    .edit-mode-btn,
+    .done-edit-btn {
+        border-color: rgba(255, 255, 255, 0.1);
+        
+        &:hover {
+            border-color: var(--primary);
+        }
+    }
+}
+
+/* 编辑输入框样式 */
+.todo-edit-input {
+    transition: all var(--transition-normal);
+    
+    &:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 2px var(--primary-transparent);
+    }
+}
+
+/* 编辑模式下的待办项样式调整 */
+.todo-item.edit-mode {
+    background: var(--surface);
+    
+    .todo-delete {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    /* 编辑模式下的hover效果 */
+    &:hover {
+        transform: none;
+        .todo-edit-input {
+            border-color: var(--primary);
+        }
+    }
+}
+
+/* 暗色模式适配 */
+@media (prefers-color-scheme: dark) {
+    .todo-edit-input {
+        background: var(--surface-transparent);
+        border-color: rgba(255, 255, 255, 0.1);
+        
+        &:focus {
+            border-color: var(--primary);
+        }
+    }
+}
+
+/* 待办项基础样式 */
+.todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.026);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-normal) var(--ease-spring);
+    cursor: pointer;
+    gap: 0.75rem;
+    
+    &:not(.edit-mode):hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    &.edit-mode {
+        cursor: default;
+        
+        &:hover {
+            transform: none;
+        }
+    }
+}
+
+/* 文本和输入框样式 */
+.todo-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-left: 0.6rem;
+    padding: 0.56rem;
+}
+
+.todo-edit-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 16px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: "Noto Serif SC";
+    
+    &:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 2px var(--primary-transparent);
+    }
+}
+
+/* 优化待办项在移动设备上的布局 */
+.todo-item {
+    /* 确保内容不会溢出 */
+    width: 100%;
+    min-width: 0; /* 允许flex item收缩 */
+    gap: 0;
+    
+    /* 编辑模式下的特殊处理 */
+    &.edit-mode {
+        /* 使用更紧凑的padding */
+        background: rgba(0, 0, 0, 0.026);
+        padding: 1rem;
+        
+        /* 优化flex布局 */
+        display: flex;
+        align-items: center;
+        
+        /* 确保checkbox保持大小 */
+        .todo-checkbox {
+            flex-shrink: 0;
+        }
+        
+        /* 让输入框能够自适应收缩 */
+        .todo-edit-input {
+            flex: 1;
+            min-width: 0; /* 关键：允许输入框收缩 */
+            width: 100%;
+            margin: 0 0.8rem; /* 减小边距 */
+            padding: 0.5rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        /* 优化删除按钮 */
+        .todo-delete {
+            flex-shrink: 0;
+            width: 2rem; /* 减小按钮宽度 */
+            height: 2rem;
+            padding: 0;
+            margin-left: auto;
+        }
+    }
+}
+
+/* 移动设备适配 */
+@media (max-width: 480px) {
+    .todo-item {
+        padding: 0.75rem;
+        
+        &.edit-mode {
+            padding: 0.75rem;
+            
+            .todo-checkbox {
+                width: 1.25rem;
+                height: 1.25rem;
+            }
+            
+            .todo-delete {
+                width: 1.75rem;
+                height: 1.75rem;
+                
+                i {
+                    font-size: 0.875rem;
+                }
+            }
+        }
+    }
+    
+    /* 优化编辑模式下的文本显示 */
+    .todo-text {
+        margin-left: 0.5rem;
+    }
+}
+
+/* 确保删除按钮在任何情况下都保持可见和可点击 */
+.todo-delete {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--error);
+    transition: all var(--transition-normal) var(--ease-spring);
+    
+    &:hover {
+        background: var(--error);
+        color: #fff;
+        transform: scale(1.1);
+    }
+    
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+.todo-page {
+    overflow-y: auto;
 }

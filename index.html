@@ -276,41 +276,57 @@
                     </button>
                 </div>
                 
-                <!-- 未完成待办 -->
+                <!-- 未完成待办组 -->
                 <div class="todo-group" x-show="activeTodos.length > 0">
                     <div class="todo-group-header">
                         <h3>未完成</h3>
-                        <span class="todo-count" x-text="activeTodos.length + ' 项'"></span>
+                        <div class="todo-group-actions">
+                            <span class="todo-count" x-text="activeTodos.length + ' 项'"></span>
+                            <!-- 新增编辑按钮 -->
+                            <button class="btn-base edit-mode-btn" 
+                                    @click="toggleEditMode('active')"
+                                    x-show="!editMode.active">
+                                <i class="fas fa-edit"></i>
+                                <span>编辑</span>
+                            </button>
+                            <!-- 完成编辑按钮 -->
+                            <button class="btn-base done-edit-btn" 
+                                    @click="toggleEditMode('active')"
+                                    x-show="editMode.active">
+                                <i class="fas fa-check"></i>
+                                <span>完成</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="todo-list">
                         <template x-for="todo in activeTodos" :key="todo.id">
-                            <div class="todo-item"
-                                 :class="{ 'editing': editingTodo?.id === todo.id }"
-                                 @click="selectTodo(todo)"
-                                 @touchstart.self="handleTodoTouchStart($event, todo)"
-                                 @touchend.self="handleTodoTouchEnd">
+                            <div class="todo-item" 
+                                 :class="{ 'edit-mode': editMode.active }"
+                                 @click="selectTodo(todo)">
                                 <label class="todo-checkbox" @click.stop>
                                     <input type="checkbox" 
-                                           :checked="todo.completed"
-                                           @change="toggleTodo(todo)">
+                                            :checked="todo.completed"
+                                            @change="toggleTodo(todo)">
                                     <span class="checkmark"></span>
                                 </label>
-                                <template x-if="editingTodo?.id === todo.id">
+                                
+                                <!-- 编辑模式下显示输入框，非编辑模式显示文本 -->
+                                <template x-if="editMode.active">
                                     <input class="todo-edit-input"
-                                           type="text"
-                                           x-model="editingTodo.text"
-                                           @blur="saveTodoEdit"
-                                           @keydown.enter="saveTodoEdit"
-                                           @keydown.escape="cancelTodoEdit">
+                                            type="text"
+                                            :value="todo.text"
+                                            @click.stop
+                                            @input="updateTodoText(todo, $event.target.value)"
+                                            @keydown.enter="$event.target.blur()">
                                 </template>
-                                <span x-show="editingTodo?.id !== todo.id" 
-                                      class="todo-text" 
-                                      x-text="todo.text"
-                                      @touchstart.stop="handleTodoTouchStart($event, todo)"
-                                      @touchend.stop="handleTodoTouchEnd"></span>
+                                <span x-show="!editMode.active" 
+                                        class="todo-text" 
+                                        x-text="todo.text"></span>
+                                
+                                <!-- 删除按钮 -->
                                 <button class="todo-delete" 
-                                        @click.stop="confirmDeleteTodo(todo)"
-                                        @touchend.stop>
+                                        x-show="editMode.active"
+                                        @click.stop="confirmDeleteTodo(todo)">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -318,15 +334,32 @@
                     </div>
                 </div>
                 
-                <!-- 已完成待办 -->
+                <!-- 已完成待办组 -->
                 <div class="todo-group" x-show="completedTodos.length > 0">
                     <div class="todo-group-header">
                         <h3>已完成</h3>
                         <div class="todo-group-actions">
                             <span class="todo-count" x-text="completedTodos.length + ' 项'"></span>
+                            <!-- 新增编辑按钮 -->
+                            <button class="btn-base edit-mode-btn" 
+                                    @click="toggleEditMode('completed')"
+                                    x-show="!editMode.completed">
+                                <i class="fas fa-edit"></i>
+                                <span>编辑</span>
+                            </button>
+                            <!-- 完成编辑按钮 -->
+                            <button class="btn-base done-edit-btn" 
+                                    @click="toggleEditMode('completed')"
+                                    x-show="editMode.completed">
+                                <i class="fas fa-check"></i>
+                                <span>完成</span>
+                            </button>
+                            <!-- 清除已完成按钮移到编辑模式中 -->
                             <button class="btn-base clear-completed" 
-                                    @click="clearCompleted">
-                                清除已完成
+                                    @click="clearCompleted"
+                                    x-show="editMode.completed">
+                                <i class="fas fa-trash"></i>
+                                <span>清除全部</span>
                             </button>
                         </div>
                     </div>

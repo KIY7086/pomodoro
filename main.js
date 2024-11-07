@@ -66,22 +66,37 @@ document.addEventListener('alpine:init', () => {
             // 确保初始化 todoStats
             todoStats: {},
     
+            // 编辑模式状态
+            editMode: {
+                active: false,
+                completed: false
+            },
+    
+            // 切换编辑模式
+            toggleEditMode(type) {
+                this.editMode[type] = !this.editMode[type];
+                
+                // 如果退出编辑模式，保存所有更改并显示提示
+                if (!this.editMode[type]) {
+                    this.saveTodos();
+                    this.showToast('已退出编辑模式', 'info', 'fa-check');
+                }
+            },
+    
             // 添加选择待办的方法
             selectTodo(todo) {
-                if (todo.completed) return; // 已完成的待办不可选择
+                if (this.editMode.active || this.editMode.completed) return;
+                
+                if (todo.completed) return;
                 
                 this.currentTodo = todo;
-                this.showTodoPage = false; // 切换到计时器页面
+                this.showTodoPage = false;
                 
-                // 如果计时器正在运行，先暂停
                 if (this.isRunning) {
                     this.pause();
                 }
                 
-                // 切换到专注模式
                 this.changeMode('pomodoro');
-                
-                // 显示提示
                 this.showToast(`开始专注: ${todo.text}`, 'info', 'fa-list-check');
             },
     
@@ -266,17 +281,20 @@ document.addEventListener('alpine:init', () => {
                 
                 this.touchStartTime = Date.now();
                 this.touchTimer = setTimeout(() => {
-                    this.editingTodo = {
-                        id: todo.id,
-                        text: todo.text
-                    };
-                    // 等待DOM更新后聚焦输入框
-                    this.$nextTick(() => {
-                        const input = event.target.querySelector('.todo-edit-input');
-                        if (input) {
-                            input.focus();
-                        }
-                    });
+                    // 只有未完成的待办才能编辑
+                    if (!todo.completed) {
+                        this.editingTodo = {
+                            id: todo.id,
+                            text: todo.text
+                        };
+                        // 等待DOM更新后聚焦输入框
+                        this.$nextTick(() => {
+                            const input = event.target.querySelector('.todo-edit-input');
+                            if (input) {
+                                input.focus();
+                            }
+                        });
+                    }
                 }, 500); // 500ms长按触发编辑
             },
         
@@ -300,7 +318,7 @@ document.addEventListener('alpine:init', () => {
                 this.editingTodo = null;
             },
         
-            // ���消编辑
+            // 消编辑
             cancelTodoEdit() {
                 this.editingTodo = null;
             },
@@ -652,7 +670,7 @@ document.addEventListener('alpine:init', () => {
             
                 const nextMode = this.getNextMode();
                 
-                // 添加自动切换的逻辑判断，防止循环
+                // 添加自动切换的逻辑判断，防止环
                 const shouldAutoStart = (
                     // 从休息切换到专注时
                     (this.currentMode !== 'pomodoro' && nextMode === 'pomodoro' && this.settings.autoStartPomodoro) ||
@@ -660,7 +678,7 @@ document.addEventListener('alpine:init', () => {
                     (this.currentMode === 'pomodoro' && nextMode !== 'pomodoro' && this.settings.autoStartBreak)
                 );
             
-                // 首先切换模式和重置计时器
+                // 首先切换模式和置计时器
                 this.currentMode = nextMode;
                 this.timeLeft = this.times[nextMode];
                 this.timerWorker.postMessage({
@@ -835,7 +853,7 @@ document.addEventListener('alpine:init', () => {
             
             // 显示完成统计信息
             const message = `
-                本次专注：${Math.floor(currentSessionTime / 60)} 分钟
+                本次专注${Math.floor(currentSessionTime / 60)} 分钟
                 总计时间：${Math.floor(stats.totalFocusTime / 60)} 分钟
                 完成番茄：${stats.pomodoroCount} 个
                 短休息：${stats.shortBreakCount} 次
@@ -892,6 +910,41 @@ document.addEventListener('alpine:init', () => {
             } catch (error) {
                 console.error('Error loading todo stats:', error);
                 this.todoStats = {};
+            }
+        },
+
+        handleTodoClick(todo) {
+            // 如果正在编辑，不执行选择操作
+            if (this.editingTodo?.id === todo.id) {
+                return;
+            }
+            
+            // 如果是已完成的待办，不执行选择操作
+            if (todo.completed) {
+                return;
+            }
+            
+            // 清除可能存在的长按定时器
+            if (this.touchTimer) {
+                clearTimeout(this.touchTimer);
+                this.touchTimer = null;
+            }
+            
+            // 如果从触摸开始到结束的时间小于500ms，认为是点击操作
+            const touchDuration = Date.now() - this.touchStartTime;
+            if (!this.touchStartTime || touchDuration < 500) {
+                this.selectTodo(todo);
+            }
+            
+            // 重置触摸开始时间
+            this.touchStartTime = null;
+        },
+
+        // 更新待办文本
+        updateTodoText(todo, newText) {
+            // 确保文本不为空
+            if (newText.trim()) {
+                todo.text = newText.trim();
             }
         }
     }));
